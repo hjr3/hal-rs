@@ -12,3 +12,6 @@ install:
 
 script:
   - make
+
+notifications:
+  email: false
