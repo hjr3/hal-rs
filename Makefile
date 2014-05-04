@@ -4,16 +4,17 @@ RUSTDOC := rustdoc
 BUILDDIR := build
 
 HAL_LIB_FILE := src/hal.rs
+HAL_FILES := src/*.rs
 HAL_LIB := $(foreach file,$(shell $(RUSTC) --crate-file-name $(HAL_LIB_FILE)),$(BUILDDIR)/$(file))
 HAL_TEST := $(BUILDDIR)/$(shell $(RUSTC) --test --crate-file-name $(HAL_LIB_FILE))
 
 $(BUILDDIR):
 	mkdir -p $@
 
-$(HAL_LIB): $(HAL_LIB_FILE) | $(BUILDDIR)
+$(HAL_LIB): $(HAL_FILES) | $(BUILDDIR)
 	$(RUSTC) --out-dir $(@D) $<
 
-$(HAL_TEST): $(HAL_LIB_FILE) | $(BUILDDIR)
+$(HAL_TEST): $(HAL_FILES) | $(BUILDDIR)
 	$(RUSTC) --out-dir $(@D) --test $< 
 
 all: $(HAL_LIB)
@@ -21,7 +22,7 @@ all: $(HAL_LIB)
 test: $(HAL_TEST)
 	$(HAL_TEST)
 
-doc: $(HAL_LIB_FILE) | $(BUILDDIR)
+doc: $(HAL_FILES) | $(BUILDDIR)
 	$(RUSTDOC) $<
 
 clean:
