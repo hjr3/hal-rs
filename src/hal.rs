@@ -177,7 +177,7 @@ mod hal {
             Resource { state: HashMap::new(), links: HashMap::new(), resources: HashMap::new() }
         }
 
-        pub fn with_uri(uri: &str) -> Resource {
+        pub fn with_self(uri: &str) -> Resource {
             Resource::new().add_link("self", Link::new(uri))
         }
 
@@ -266,7 +266,7 @@ mod tests {
 
     impl ToHal for Order {
         fn to_hal(&self) -> Resource {
-            Resource::with_uri("https://www.example.com/orders/1")
+            Resource::with_self("https://www.example.com/orders/1")
                 .add_state("total", self.total.to_hal_data())
                 .add_state("currency", self.currency.to_hal_data())
                 .add_state("status", self.status.to_hal_data())
@@ -311,24 +311,24 @@ mod tests {
     }
 
     #[test]
-    fn hal_with_uri() {
-        let hal = Resource::with_uri("https://www.example.com");
+    fn hal_with_self() {
+        let hal = Resource::with_self("https://www.example.com");
 
         let output = r#"{"_links":{"self":{"href":"https://www.example.com"}}}"#;
         assert_eq!(hal.to_json().to_str(), output.to_owned());
     }
 
     #[test]
-    fn hal_with_uri_and_link() {
+    fn hal_with_self_and_link() {
         let output = r#"{"_links":{"orders":{"href":"https://www.example.com/orders"},"self":{"href":"https://www.example.com"}}}"#;
-        let hal = Resource::with_uri("https://www.example.com")
+        let hal = Resource::with_self("https://www.example.com")
             .add_link("orders", Link::new("https://www.example.com/orders"));
         assert_eq!(hal.to_json().to_str(), output.to_owned());
     }
 
     #[test]
-    fn hal_with_uri_and_two_links() {
-        let hal = Resource::with_uri("https://www.example.com")
+    fn hal_with_self_and_two_links() {
+        let hal = Resource::with_self("https://www.example.com")
             .add_link("orders", Link::new("https://www.example.com/orders/1"))
             .add_link("orders", Link::new("https://www.example.com/orders/2"));
 
@@ -338,7 +338,7 @@ mod tests {
 
     #[test]
     fn hal_and_add_curie() {
-        let hal = Resource::with_uri("https://www.example.com")
+        let hal = Resource::with_self("https://www.example.com")
             .add_curie("ea", "http://example.com/docs/rels/{rel}");
 
 
@@ -360,7 +360,7 @@ mod tests {
 
     #[test]
     fn hal_spec() {
-        let hal = Resource::with_uri("/orders")
+        let hal = Resource::with_self("/orders")
             .add_curie("ea", "http://example.com/docs/rels/{rel}")
             .add_link("next", Link::new("/orders?page=2"))
             .add_link("ea:find", Link::new("/orders{?id}").templated(true))
@@ -369,7 +369,7 @@ mod tests {
             .add_state("currentlyProcessing", (14 as int).to_hal_data())
             .add_state("shippedToday", (14 as int).to_hal_data())
             .add_resource("ea:order",
-                Resource::with_uri("/orders/123")
+                Resource::with_self("/orders/123")
                     .add_link("ea:basket", Link::new("/baskets/98712"))
                     .add_link("ea:customer", Link::new("/customers/7809"))
                     .add_state("total", (30.00 as int).to_hal_data()) // fix precision
@@ -377,7 +377,7 @@ mod tests {
                     .add_state("status", "shipped".to_owned().to_hal_data())
             )
             .add_resource("ea:order",
-                Resource::with_uri("/orders/124")
+                Resource::with_self("/orders/124")
                     .add_link("ea:basket", Link::new("/baskets/97213"))
                     .add_link("ea:customer", Link::new("/customers/12369"))
                     .add_state("total", (20.00 as int).to_hal_data()) // fix precision
