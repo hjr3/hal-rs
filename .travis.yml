@@ -3,6 +3,10 @@
 # it treats unknown languages as ruby-like I believe.
 language: c
 
+env:
+  global:
+      - secure: ViPh8yxpYSWPO73W+BoMVQQUNnsOpW4oHbkc6KpkbWseBaCnai3xlxiY6rthXmhaxnOA33JjU7gl90507RNQ5pv8zWeeerg8goZgDpWTqq0X0BKibcgrLXW2Ulh7okyZUj++nXupTiG8aVc2JFGjHeH4ePesY/mIpskGTm/mMEY=
+
 before_install:
   - yes | sudo add-apt-repository ppa:hansjorg/rust
   - sudo apt-get update
@@ -12,6 +16,9 @@ install:
 
 script:
   - make
+
+after_script:
+  - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
 
 notifications:
   email: false
