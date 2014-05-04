@@ -49,10 +49,6 @@ impl ToHalData for bool {
     fn to_hal_data(&self) -> Data { Boolean(*self) }
 }
 
-impl ToHalData for ~str {
-    fn to_hal_data(&self) -> Data { String(StrBuf::from_str((*self).as_slice())) }
-}
-
 impl ToHalData for StrBuf {
     fn to_hal_data(&self) -> Data { String((*self).clone()) }
 }
@@ -131,7 +127,7 @@ impl Link {
 
 impl ToJson for Link {
     fn to_json(&self) -> json::Json {
-        let mut link = ~TreeMap::new();
+        let mut link = box TreeMap::new();
         link.insert("href".to_owned(), self.href.to_json());
 
         if self.templated.is_some() {
@@ -211,9 +207,9 @@ impl Resource {
 
 impl ToJson for Resource {
     fn to_json(&self) -> json::Json {
-        let mut hal = ~TreeMap::new();
-        let mut link_rels = ~TreeMap::new();
-        let mut embeds = ~TreeMap::new();
+        let mut hal = box TreeMap::new();
+        let mut link_rels = box TreeMap::new();
+        let mut embeds = box TreeMap::new();
 
         if self.links.len() > 0 {
             for (rel, links) in self.links.iter() {
