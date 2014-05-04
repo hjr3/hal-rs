@@ -166,27 +166,27 @@ mod hal {
     }
 
     #[deriving(Clone, Encodable)]
-    pub struct Hal {
-        data: HashMap<StrBuf, Data>,
+    pub struct Resource {
+        state: HashMap<StrBuf, Data>,
         links: HashMap<StrBuf, Vec<Link>>,
-        resources: HashMap<StrBuf, Vec<Hal>>
+        resources: HashMap<StrBuf, Vec<Resource>>
     }
 
-    impl Hal {
-        pub fn new() -> Hal {
-            Hal { data: HashMap::new(), links: HashMap::new(), resources: HashMap::new() }
+    impl Resource {
+        pub fn new() -> Resource {
+            Resource { state: HashMap::new(), links: HashMap::new(), resources: HashMap::new() }
         }
 
-        pub fn with_uri(uri: &str) -> Hal {
-            Hal::new().add_link("self", Link::new(uri))
+        pub fn with_uri(uri: &str) -> Resource {
+            Resource::new().add_link("self", Link::new(uri))
         }
 
-        pub fn add_data(mut self, key: &str, value: Data) -> Hal {
-            self.data.insert(StrBuf::from_str(key), value);
+        pub fn add_state(mut self, key: &str, value: Data) -> Resource {
+            self.state.insert(StrBuf::from_str(key), value);
             self
         }
 
-        pub fn add_link(mut self, rel: &str, link: Link) -> Hal {
+        pub fn add_link(mut self, rel: &str, link: Link) -> Resource {
             let l = vec![link.clone()];
             self.links.insert_or_update_with(StrBuf::from_str(rel), l, |_, links| {
                 links.push(link.clone())
@@ -194,12 +194,12 @@ mod hal {
             self
         }
 
-        pub fn add_curie(self, name: &str, href: &str) -> Hal {
+        pub fn add_curie(self, name: &str, href: &str) -> Resource {
             let link = Link::new(href).templated(true).name(name);
             self.add_link("curies", link)
         }
 
-        pub fn add_resource(mut self, rel: &str, resource: Hal) -> Hal {
+        pub fn add_resource(mut self, rel: &str, resource: Resource) -> Resource {
             let r = vec![resource.clone()];
             self.resources.insert_or_update_with(StrBuf::from_str(rel), r, |_, resources| {
                 resources.push(resource.clone())
@@ -208,7 +208,7 @@ mod hal {
         }
     }
 
-    impl ToJson for Hal {
+    impl ToJson for Resource {
         fn to_json(&self) -> json::Json {
             let mut hal = ~TreeMap::new();
             let mut link_rels = ~TreeMap::new();
@@ -228,7 +228,7 @@ mod hal {
             }
 
 
-            for (k, v) in self.data.iter() {
+            for (k, v) in self.state.iter() {
                 hal.insert(k.clone().into_owned(), v.to_json());
             }
 
@@ -247,12 +247,31 @@ mod hal {
             json::Object(hal)
         }
     }
+
+    pub trait ToHal {
+        fn to_hal(&self) -> Resource;
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use hal::{Link, Hal, ToHalData};
+    use hal::{Link, Resource, ToHal, ToHalData};
     use serialize::json::ToJson;
+
+    struct Order {
+        total: f64,
+        currency: StrBuf,
+        status: StrBuf
+    }
+
+    impl ToHal for Order {
+        fn to_hal(&self) -> Resource {
+            Resource::with_uri("https://www.example.com/orders/1")
+                .add_state("total", self.total.to_hal_data())
+                .add_state("currency", self.currency.to_hal_data())
+                .add_state("status", self.status.to_hal_data())
+        }
+    }
 
     #[test]
     fn link_new() {
@@ -279,13 +298,13 @@ mod tests {
 
     #[test]
     fn hal_add_resource() {
-        let hal = Hal::new();
-        hal.add_resource("orders", Hal::new());
+        let hal = Resource::new();
+        hal.add_resource("orders", Resource::new());
     }
 
     #[test]
     fn hal_new() {
-        let hal = Hal::new();
+        let hal = Resource::new();
 
         let output = r#"{}"#;
         assert_eq!(hal.to_json().to_str(), output.to_owned());
@@ -293,7 +312,7 @@ mod tests {
 
     #[test]
     fn hal_with_uri() {
-        let hal = Hal::with_uri("https://www.example.com");
+        let hal = Resource::with_uri("https://www.example.com");
 
         let output = r#"{"_links":{"self":{"href":"https://www.example.com"}}}"#;
         assert_eq!(hal.to_json().to_str(), output.to_owned());
@@ -302,14 +321,14 @@ mod tests {
     #[test]
     fn hal_with_uri_and_link() {
         let output = r#"{"_links":{"orders":{"href":"https://www.example.com/orders"},"self":{"href":"https://www.example.com"}}}"#;
-        let hal = Hal::with_uri("https://www.example.com")
+        let hal = Resource::with_uri("https://www.example.com")
             .add_link("orders", Link::new("https://www.example.com/orders"));
         assert_eq!(hal.to_json().to_str(), output.to_owned());
     }
 
     #[test]
     fn hal_with_uri_and_two_links() {
-        let hal = Hal::with_uri("https://www.example.com")
+        let hal = Resource::with_uri("https://www.example.com")
             .add_link("orders", Link::new("https://www.example.com/orders/1"))
             .add_link("orders", Link::new("https://www.example.com/orders/2"));
 
@@ -319,7 +338,7 @@ mod tests {
 
     #[test]
     fn hal_and_add_curie() {
-        let hal = Hal::with_uri("https://www.example.com")
+        let hal = Resource::with_uri("https://www.example.com")
             .add_curie("ea", "http://example.com/docs/rels/{rel}");
 
 
@@ -328,12 +347,12 @@ mod tests {
     }
 
     #[test]
-    fn hal_add_data() {
-        let hal = Hal::new()
-            .add_data("currentlyProcessing", (14 as int).to_hal_data())
-            .add_data("currency", "USD".to_owned().to_hal_data())
-            .add_data("active", true.to_hal_data())
-            .add_data("errors", ().to_hal_data());
+    fn hal_add_state() {
+        let hal = Resource::new()
+            .add_state("currentlyProcessing", (14 as int).to_hal_data())
+            .add_state("currency", "USD".to_owned().to_hal_data())
+            .add_state("active", true.to_hal_data())
+            .add_state("errors", ().to_hal_data());
 
         let output = r#"{"active":true,"currency":"USD","currentlyProcessing":14,"errors":null}"#;
         assert_eq!(hal.to_json().to_str(), output.to_owned());
@@ -341,32 +360,40 @@ mod tests {
 
     #[test]
     fn hal_spec() {
-        let hal = Hal::with_uri("/orders")
+        let hal = Resource::with_uri("/orders")
             .add_curie("ea", "http://example.com/docs/rels/{rel}")
             .add_link("next", Link::new("/orders?page=2"))
             .add_link("ea:find", Link::new("/orders{?id}").templated(true))
             .add_link("ea:admin", Link::new("/admins/2").title("Fred"))
             .add_link("ea:admin", Link::new("/admins/5").title("Kate"))
-            .add_data("currentlyProcessing", (14 as int).to_hal_data())
-            .add_data("shippedToday", (14 as int).to_hal_data())
+            .add_state("currentlyProcessing", (14 as int).to_hal_data())
+            .add_state("shippedToday", (14 as int).to_hal_data())
             .add_resource("ea:order",
-                Hal::with_uri("/orders/123")
+                Resource::with_uri("/orders/123")
                     .add_link("ea:basket", Link::new("/baskets/98712"))
                     .add_link("ea:customer", Link::new("/customers/7809"))
-                    .add_data("total", (30.00 as int).to_hal_data()) // fix precision
-                    .add_data("currency", "USD".to_owned().to_hal_data())
-                    .add_data("status", "shipped".to_owned().to_hal_data())
+                    .add_state("total", (30.00 as int).to_hal_data()) // fix precision
+                    .add_state("currency", "USD".to_owned().to_hal_data())
+                    .add_state("status", "shipped".to_owned().to_hal_data())
             )
             .add_resource("ea:order",
-                Hal::with_uri("/orders/124")
+                Resource::with_uri("/orders/124")
                     .add_link("ea:basket", Link::new("/baskets/97213"))
                     .add_link("ea:customer", Link::new("/customers/12369"))
-                    .add_data("total", (20.00 as int).to_hal_data()) // fix precision
-                    .add_data("currency", "USD".to_owned().to_hal_data())
-                    .add_data("status", "processing".to_owned().to_hal_data())
+                    .add_state("total", (20.00 as int).to_hal_data()) // fix precision
+                    .add_state("currency", "USD".to_owned().to_hal_data())
+                    .add_state("status", "processing".to_owned().to_hal_data())
             );
 
         let output = r#"{"_embedded":{"ea:order":[{"_links":{"ea:basket":{"href":"/baskets/98712"},"ea:customer":{"href":"/customers/7809"},"self":{"href":"/orders/123"}},"currency":"USD","status":"shipped","total":30},{"_links":{"ea:basket":{"href":"/baskets/97213"},"ea:customer":{"href":"/customers/12369"},"self":{"href":"/orders/124"}},"currency":"USD","status":"processing","total":20}]},"_links":{"curies":[{"href":"http://example.com/docs/rels/{rel}","name":"ea","templated":true}],"ea:admin":[{"href":"/admins/2","title":"Fred"},{"href":"/admins/5","title":"Kate"}],"ea:find":{"href":"/orders{?id}","templated":true},"next":{"href":"/orders?page=2"},"self":{"href":"/orders"}},"currentlyProcessing":14,"shippedToday":14}"#;
         assert_eq!(hal.to_json().to_str(), output.to_owned());
+    }
+
+    #[test]
+    fn order_to_hal() {
+        let order = Order { total: 20.00 as f64, currency: StrBuf::from_str("USD"), status: StrBuf::from_str("processing") };
+
+        let output = r#"{"_links":{"self":{"href":"https://www.example.com/orders/1"}},"currency":"USD","status":"processing","total":20}"#;
+        assert_eq!(order.to_hal().to_json().to_str(), output.to_owned());
     }
 }
