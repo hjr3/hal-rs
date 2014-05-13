@@ -53,6 +53,10 @@ impl ToHalData for StrBuf {
     fn to_hal_data(&self) -> Data { String((*self).clone()) }
 }
 
+impl ToHalData for ~str {
+    fn to_hal_data(&self) -> Data { String(StrBuf::from_owned_str((*self).clone())) }
+}
+
 impl ToJson for Data {
     fn to_json(&self) -> Json { 
         match *self {
@@ -89,39 +93,46 @@ impl Link {
         }
     }
 
-    pub fn templated(mut self, is_template: bool) -> Link {
-        self.templated = Some(is_template);
-        self
+    pub fn templated(self, is_template: bool) -> Link {
+        let mut link = self.clone();
+        link.templated = Some(is_template);
+        link
     }
 
-    pub fn media_type(mut self, media_type: &str) -> Link {
-        self.media_type = Some(StrBuf::from_str(media_type));
-        self
+    pub fn media_type(self, media_type: &str) -> Link {
+        let mut link = self.clone();
+        link.media_type = Some(StrBuf::from_str(media_type));
+        link
     }
 
-    pub fn deprecation(mut self, deprecation: &str) -> Link {
-        self.deprecation = Some(StrBuf::from_str(deprecation));
-        self
+    pub fn deprecation(self, deprecation: &str) -> Link {
+        let mut link = self.clone();
+        link.deprecation = Some(StrBuf::from_str(deprecation));
+        link
     }
 
-    pub fn name(mut self, name: &str) -> Link {
-        self.name = Some(StrBuf::from_str(name));
-        self
+    pub fn name(self, name: &str) -> Link {
+        let mut link = self.clone();
+        link.name = Some(StrBuf::from_str(name));
+        link
     }
 
-    pub fn title(mut self, title: &str) -> Link {
-        self.title = Some(StrBuf::from_str(title));
-        self
+    pub fn title(self, title: &str) -> Link {
+        let mut link = self.clone();
+        link.title = Some(StrBuf::from_str(title));
+        link
     }
 
-    pub fn profile(mut self, profile: &str) -> Link {
-        self.profile = Some(StrBuf::from_str(profile));
-        self
+    pub fn profile(self, profile: &str) -> Link {
+        let mut link = self.clone();
+        link.profile = Some(StrBuf::from_str(profile));
+        link
     }
 
-    pub fn hreflang(mut self, hreflang: &str) -> Link {
-        self.hreflang = Some(StrBuf::from_str(hreflang));
-        self
+    pub fn hreflang(self, hreflang: &str) -> Link {
+        let mut link = self.clone();
+        link.hreflang = Some(StrBuf::from_str(hreflang));
+        link
     }
 }
 
@@ -178,17 +189,19 @@ impl Resource {
         Resource::new().add_link("self", Link::new(uri))
     }
 
-    pub fn add_state(mut self, key: &str, value: Data) -> Resource {
-        self.state.insert(StrBuf::from_str(key), value);
-        self
+    pub fn add_state(self, key: &str, value: Data) -> Resource {
+        let mut resource = self.clone();
+        resource.state.insert(StrBuf::from_str(key), value);
+        resource
     }
 
-    pub fn add_link(mut self, rel: &str, link: Link) -> Resource {
+    pub fn add_link(self, rel: &str, link: Link) -> Resource {
+        let mut resource = self.clone();
         let l = vec![link.clone()];
-        self.links.insert_or_update_with(StrBuf::from_str(rel), l, |_, links| {
+        resource.links.insert_or_update_with(StrBuf::from_str(rel), l, |_, links| {
             links.push(link.clone())
         });
-        self
+        resource
     }
 
     pub fn add_curie(self, name: &str, href: &str) -> Resource {
@@ -196,12 +209,13 @@ impl Resource {
         self.add_link("curies", link)
     }
 
-    pub fn add_resource(mut self, rel: &str, resource: Resource) -> Resource {
+    pub fn add_resource(self, rel: &str, resource: Resource) -> Resource {
+        let mut resource = self.clone();
         let r = vec![resource.clone()];
-        self.resources.insert_or_update_with(StrBuf::from_str(rel), r, |_, resources| {
+        resource.resources.insert_or_update_with(StrBuf::from_str(rel), r, |_, resources| {
             resources.push(resource.clone())
         });
-        self
+        resource
     }
 }
 
