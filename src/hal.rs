@@ -210,12 +210,12 @@ impl Resource {
     }
 
     pub fn add_resource(self, rel: &str, resource: Resource) -> Resource {
-        let mut resource = self.clone();
+        let mut new_r = self.clone();
         let r = vec![resource.clone()];
-        resource.resources.insert_or_update_with(StrBuf::from_str(rel), r, |_, resources| {
+        new_r.resources.insert_or_update_with(StrBuf::from_str(rel), r, |_, resources| {
             resources.push(resource.clone())
         });
-        resource
+        new_r
     }
 }
 
