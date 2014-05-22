@@ -44,7 +44,7 @@ fn main() {
             Resource::with_self("/orders/123")
                 .add_link("ea:basket", Link::new("/baskets/98712"))
                 .add_link("ea:customer", Link::new("/customers/7809"))
-                .add_state("total", (30.00 as int).to_hal_data())
+                .add_state("total", (30.00 as f64).to_hal_data())
                 .add_state("currency", "USD".to_owned().to_hal_data())
                 .add_state("status", "shipped".to_owned().to_hal_data())
         )
@@ -52,7 +52,7 @@ fn main() {
             Resource::with_self("/orders/124")
                 .add_link("ea:basket", Link::new("/baskets/97213"))
                 .add_link("ea:customer", Link::new("/customers/12369"))
-                .add_state("total", (20.00 as int).to_hal_data())
+                .add_state("total", (20.00 as f64).to_hal_data())
                 .add_state("currency", "USD".to_owned().to_hal_data())
                 .add_state("status", "processing".to_owned().to_hal_data())
         );
