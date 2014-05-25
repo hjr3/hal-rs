@@ -20,7 +20,7 @@ mod tests;
 
 /// Represents Hal data value
 #[deriving(Clone, Encodable, Eq)]
-pub enum Data {
+pub enum HalState {
     Number(f64),
     String(StrBuf),
     Boolean(bool),
@@ -28,36 +28,36 @@ pub enum Data {
 }
 
 /// A trait for converting values to Hal data
-pub trait ToHalData {
-    /// Converts the value of `self` to an instance of Data
-    fn to_hal_data(&self) -> Data;
+pub trait ToHalState {
+    /// Converts the value of `self` to an instance of HalState
+    fn to_hal_state(&self) -> HalState;
 }
 
-impl ToHalData for int {
-    fn to_hal_data(&self) -> Data { Number(*self as f64) }
+impl ToHalState for int {
+    fn to_hal_state(&self) -> HalState { Number(*self as f64) }
 }
 
-impl ToHalData for f64 {
-    fn to_hal_data(&self) -> Data { Number(*self) }
+impl ToHalState for f64 {
+    fn to_hal_state(&self) -> HalState { Number(*self) }
 }
 
-impl ToHalData for () {
-    fn to_hal_data(&self) -> Data { Null }
+impl ToHalState for () {
+    fn to_hal_state(&self) -> HalState { Null }
 }
 
-impl ToHalData for bool {
-    fn to_hal_data(&self) -> Data { Boolean(*self) }
+impl ToHalState for bool {
+    fn to_hal_state(&self) -> HalState { Boolean(*self) }
 }
 
-impl ToHalData for StrBuf {
-    fn to_hal_data(&self) -> Data { String((*self).clone()) }
+impl ToHalState for StrBuf {
+    fn to_hal_state(&self) -> HalState { String((*self).clone()) }
 }
 
-impl ToHalData for ~str {
-    fn to_hal_data(&self) -> Data { String(StrBuf::from_owned_str((*self).clone())) }
+impl ToHalState for ~str {
+    fn to_hal_state(&self) -> HalState { String(StrBuf::from_owned_str((*self).clone())) }
 }
 
-impl ToJson for Data {
+impl ToJson for HalState {
     fn to_json(&self) -> Json { 
         match *self {
             Number(v) => v.to_json(),
@@ -175,7 +175,7 @@ impl ToJson for Link {
 
 #[deriving(Clone, Encodable)]
 pub struct Resource {
-    state: HashMap<StrBuf, Data>,
+    state: HashMap<StrBuf, HalState>,
     links: HashMap<StrBuf, Vec<Link>>,
     resources: HashMap<StrBuf, Vec<Resource>>
 }
@@ -189,7 +189,7 @@ impl Resource {
         Resource::new().add_link("self", Link::new(uri))
     }
 
-    pub fn add_state(self, key: &str, value: Data) -> Resource {
+    pub fn add_state(self, key: &str, value: HalState) -> Resource {
         let mut resource = self.clone();
         resource.state.insert(StrBuf::from_str(key), value);
         resource

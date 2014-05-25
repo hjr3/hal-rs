@@ -1,4 +1,4 @@
-use super::{Link, Resource, ToHal, ToHalData};
+use super::{Link, Resource, ToHal, ToHalState};
 use serialize::json::ToJson;
 
 struct Order {
@@ -10,9 +10,9 @@ struct Order {
 impl ToHal for Order {
     fn to_hal(&self) -> Resource {
         Resource::with_self("https://www.example.com/orders/1")
-            .add_state("total", self.total.to_hal_data())
-            .add_state("currency", self.currency.to_hal_data())
-            .add_state("status", self.status.to_hal_data())
+            .add_state("total", self.total.to_hal_state())
+            .add_state("currency", self.currency.to_hal_state())
+            .add_state("status", self.status.to_hal_state())
     }
 }
 
@@ -92,10 +92,10 @@ fn hal_and_add_curie() {
 #[test]
 fn hal_add_state() {
     let hal = Resource::new()
-        .add_state("currentlyProcessing", (14 as int).to_hal_data())
-        .add_state("currency", "USD".to_owned().to_hal_data())
-        .add_state("active", true.to_hal_data())
-        .add_state("errors", ().to_hal_data());
+        .add_state("currentlyProcessing", (14 as int).to_hal_state())
+        .add_state("currency", "USD".to_owned().to_hal_state())
+        .add_state("active", true.to_hal_state())
+        .add_state("errors", ().to_hal_state());
 
     let output = r#"{"active":true,"currency":"USD","currentlyProcessing":14,"errors":null}"#;
     assert_eq!(hal.to_json().to_str(), output.to_owned());
@@ -109,23 +109,23 @@ fn hal_spec() {
         .add_link("ea:find", Link::new("/orders{?id}").templated(true))
         .add_link("ea:admin", Link::new("/admins/2").title("Fred"))
         .add_link("ea:admin", Link::new("/admins/5").title("Kate"))
-        .add_state("currentlyProcessing", (14 as int).to_hal_data())
-        .add_state("shippedToday", (14 as int).to_hal_data())
+        .add_state("currentlyProcessing", (14 as int).to_hal_state())
+        .add_state("shippedToday", (14 as int).to_hal_state())
         .add_resource("ea:order",
             Resource::with_self("/orders/123")
                 .add_link("ea:basket", Link::new("/baskets/98712"))
                 .add_link("ea:customer", Link::new("/customers/7809"))
-                .add_state("total", (30.00 as f64).to_hal_data()) // fix precision
-                .add_state("currency", "USD".to_owned().to_hal_data())
-                .add_state("status", "shipped".to_owned().to_hal_data())
+                .add_state("total", (30.00 as f64).to_hal_state()) // fix precision
+                .add_state("currency", "USD".to_owned().to_hal_state())
+                .add_state("status", "shipped".to_owned().to_hal_state())
         )
         .add_resource("ea:order",
             Resource::with_self("/orders/124")
                 .add_link("ea:basket", Link::new("/baskets/97213"))
                 .add_link("ea:customer", Link::new("/customers/12369"))
-                .add_state("total", (20.00 as f64).to_hal_data()) // fix precision
-                .add_state("currency", "USD".to_owned().to_hal_data())
-                .add_state("status", "processing".to_owned().to_hal_data())
+                .add_state("total", (20.00 as f64).to_hal_state()) // fix precision
+                .add_state("currency", "USD".to_owned().to_hal_state())
+                .add_state("status", "processing".to_owned().to_hal_state())
         );
 
     let output = r#"{"_embedded":{"ea:order":[{"_links":{"ea:basket":{"href":"/baskets/98712"},"ea:customer":{"href":"/customers/7809"},"self":{"href":"/orders/123"}},"currency":"USD","status":"shipped","total":30},{"_links":{"ea:basket":{"href":"/baskets/97213"},"ea:customer":{"href":"/customers/12369"},"self":{"href":"/orders/124"}},"currency":"USD","status":"processing","total":20}]},"_links":{"curies":[{"href":"http://example.com/docs/rels/{rel}","name":"ea","templated":true}],"ea:admin":[{"href":"/admins/2","title":"Fred"},{"href":"/admins/5","title":"Kate"}],"ea:find":{"href":"/orders{?id}","templated":true},"next":{"href":"/orders?page=2"},"self":{"href":"/orders"}},"currentlyProcessing":14,"shippedToday":14}"#;
