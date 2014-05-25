@@ -53,10 +53,6 @@ impl ToHalState for StrBuf {
     fn to_hal_state(&self) -> HalState { String((*self).clone()) }
 }
 
-impl ToHalState for ~str {
-    fn to_hal_state(&self) -> HalState { String(StrBuf::from_owned_str((*self).clone())) }
-}
-
 impl ToJson for HalState {
     fn to_json(&self) -> Json { 
         match *self {
