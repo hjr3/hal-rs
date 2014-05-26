@@ -25,7 +25,10 @@ pub enum HalState {
     String(StrBuf),
     Boolean(bool),
     Null,
+    List(List),
 }
+
+pub type List = Vec<HalState>;
 
 /// A trait for converting values to Hal data
 pub trait ToHalState {
@@ -53,13 +56,22 @@ impl ToHalState for StrBuf {
     fn to_hal_state(&self) -> HalState { String((*self).clone()) }
 }
 
+impl ToHalState for &'static str {
+    fn to_hal_state(&self) -> HalState { String((*self).to_strbuf()) }
+}
+
+impl<T:ToHalState> ToHalState for Vec<T> {
+    fn to_hal_state(&self) -> HalState { List(self.iter().map(|elt| elt.to_hal_state()).collect()) }
+}
+
 impl ToJson for HalState {
     fn to_json(&self) -> Json { 
         match *self {
             Number(v) => v.to_json(),
             String(ref v) => v.to_json(),
             Boolean(v) => v.to_json(),
-            Null => ().to_json()
+            Null => ().to_json(),
+            List(ref v) => v.to_json(),
         }
     }
 }

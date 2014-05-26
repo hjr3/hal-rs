@@ -139,3 +139,14 @@ fn order_to_hal() {
     let output = r#"{"_links":{"self":{"href":"https://www.example.com/orders/1"}},"currency":"USD","status":"processing","total":20}"#;
     assert_eq!(order.to_hal().to_json().to_str(), output.to_owned());
 }
+
+#[test]
+fn list_to_hal_state() {
+    let friends = vec!("Mary", "Timmy", "Sally", "Wally");
+
+    let hal = Resource::with_self("/user/1")
+        .add_state("friends", friends.to_hal_state());
+
+    let output = r#"{"_links":{"self":{"href":"/user/1"}},"friends":["Mary","Timmy","Sally","Wally"]}"#;
+    assert_eq!(hal.to_json().to_str(), output.to_owned());
+}
