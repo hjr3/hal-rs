@@ -22,7 +22,7 @@ mod tests;
 #[deriving(Clone, Encodable, Eq)]
 pub enum HalState {
     Number(f64),
-    String(StrBuf),
+    String(String),
     Boolean(bool),
     Null,
     List(List),
@@ -52,7 +52,7 @@ impl ToHalState for bool {
     fn to_hal_state(&self) -> HalState { Boolean(*self) }
 }
 
-impl ToHalState for StrBuf {
+impl ToHalState for String {
     fn to_hal_state(&self) -> HalState { String((*self).clone()) }
 }
 
@@ -78,19 +78,19 @@ impl ToJson for HalState {
 
 #[deriving(Clone, Encodable)]
 pub struct Link {
-    href: StrBuf,
+    href: String,
     templated: Option<bool>,
-    media_type: Option<StrBuf>,
-    deprecation: Option<StrBuf>,
-    name: Option<StrBuf>,
-    profile: Option<StrBuf>,
-    title: Option<StrBuf>,
-    hreflang: Option<StrBuf>,
+    media_type: Option<String>,
+    deprecation: Option<String>,
+    name: Option<String>,
+    profile: Option<String>,
+    title: Option<String>,
+    hreflang: Option<String>,
 }
 
 impl Link {
     pub fn new(href: &str) -> Link {
-        Link { href: StrBuf::from_str(href),
+        Link { href: String::from_str(href),
         templated: None,
         media_type: None,
         deprecation: None,
@@ -109,37 +109,37 @@ impl Link {
 
     pub fn media_type(self, media_type: &str) -> Link {
         let mut link = self.clone();
-        link.media_type = Some(StrBuf::from_str(media_type));
+        link.media_type = Some(String::from_str(media_type));
         link
     }
 
     pub fn deprecation(self, deprecation: &str) -> Link {
         let mut link = self.clone();
-        link.deprecation = Some(StrBuf::from_str(deprecation));
+        link.deprecation = Some(String::from_str(deprecation));
         link
     }
 
     pub fn name(self, name: &str) -> Link {
         let mut link = self.clone();
-        link.name = Some(StrBuf::from_str(name));
+        link.name = Some(String::from_str(name));
         link
     }
 
     pub fn title(self, title: &str) -> Link {
         let mut link = self.clone();
-        link.title = Some(StrBuf::from_str(title));
+        link.title = Some(String::from_str(title));
         link
     }
 
     pub fn profile(self, profile: &str) -> Link {
         let mut link = self.clone();
-        link.profile = Some(StrBuf::from_str(profile));
+        link.profile = Some(String::from_str(profile));
         link
     }
 
     pub fn hreflang(self, hreflang: &str) -> Link {
         let mut link = self.clone();
-        link.hreflang = Some(StrBuf::from_str(hreflang));
+        link.hreflang = Some(String::from_str(hreflang));
         link
     }
 }
@@ -183,9 +183,9 @@ impl ToJson for Link {
 
 #[deriving(Clone, Encodable)]
 pub struct Resource {
-    state: HashMap<StrBuf, HalState>,
-    links: HashMap<StrBuf, Vec<Link>>,
-    resources: HashMap<StrBuf, Vec<Resource>>
+    state: HashMap<String, HalState>,
+    links: HashMap<String, Vec<Link>>,
+    resources: HashMap<String, Vec<Resource>>
 }
 
 impl Resource {
@@ -199,14 +199,14 @@ impl Resource {
 
     pub fn add_state(self, key: &str, value: HalState) -> Resource {
         let mut resource = self.clone();
-        resource.state.insert(StrBuf::from_str(key), value);
+        resource.state.insert(String::from_str(key), value);
         resource
     }
 
     pub fn add_link(self, rel: &str, link: Link) -> Resource {
         let mut resource = self.clone();
         let l = vec![link.clone()];
-        resource.links.insert_or_update_with(StrBuf::from_str(rel), l, |_, links| {
+        resource.links.insert_or_update_with(String::from_str(rel), l, |_, links| {
             links.push(link.clone())
         });
         resource
@@ -220,7 +220,7 @@ impl Resource {
     pub fn add_resource(self, rel: &str, resource: Resource) -> Resource {
         let mut new_r = self.clone();
         let r = vec![resource.clone()];
-        new_r.resources.insert_or_update_with(StrBuf::from_str(rel), r, |_, resources| {
+        new_r.resources.insert_or_update_with(String::from_str(rel), r, |_, resources| {
             resources.push(resource.clone())
         });
         new_r

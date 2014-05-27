@@ -3,8 +3,8 @@ use serialize::json::ToJson;
 
 struct Order {
     total: f64,
-    currency: StrBuf,
-    status: StrBuf
+    currency: String,
+    status: String
 }
 
 impl ToHal for Order {
@@ -134,7 +134,7 @@ fn hal_spec() {
 
 #[test]
 fn order_to_hal() {
-    let order = Order { total: 20.00 as f64, currency: StrBuf::from_str("USD"), status: StrBuf::from_str("processing") };
+    let order = Order { total: 20.00 as f64, currency: String::from_str("USD"), status: String::from_str("processing") };
 
     let output = r#"{"_links":{"self":{"href":"https://www.example.com/orders/1"}},"currency":"USD","status":"processing","total":20}"#;
     assert_eq!(order.to_hal().to_json().to_str(), output.to_owned());
