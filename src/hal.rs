@@ -10,8 +10,8 @@ A pure rust library for generating Hal responses.
 extern crate serialize;
 extern crate collections;
 
-use collections::HashMap;
-use collections::TreeMap;
+use std::collections::HashMap;
+use std::collections::TreeMap;
 use serialize::json::{ToJson, Json};
 use serialize::{json, Encodable};
 
@@ -19,7 +19,7 @@ use serialize::{json, Encodable};
 mod tests;
 
 /// Represents Hal data value
-#[deriving(Clone, Encodable, Eq)]
+#[deriving(Clone, Encodable)]
 pub enum HalState {
     Number(f64),
     String(String),
@@ -57,7 +57,7 @@ impl ToHalState for String {
 }
 
 impl ToHalState for &'static str {
-    fn to_hal_state(&self) -> HalState { String((*self).to_strbuf()) }
+    fn to_hal_state(&self) -> HalState { String((*self).to_string()) }
 }
 
 impl<T:ToHalState> ToHalState for Vec<T> {
@@ -147,34 +147,34 @@ impl Link {
 impl ToJson for Link {
     fn to_json(&self) -> json::Json {
         let mut link = box TreeMap::new();
-        link.insert("href".to_strbuf(), self.href.to_json());
+        link.insert("href".to_string(), self.href.to_json());
 
         if self.templated.is_some() {
-            link.insert("templated".to_strbuf(), self.templated.to_json());
+            link.insert("templated".to_string(), self.templated.to_json());
         }
 
         if self.media_type.is_some() {
-            link.insert("type".to_strbuf(), self.media_type.to_json());
+            link.insert("type".to_string(), self.media_type.to_json());
         }
 
         if self.deprecation.is_some() {
-            link.insert("deprecation".to_strbuf(), self.deprecation.to_json());
+            link.insert("deprecation".to_string(), self.deprecation.to_json());
         }
 
         if self.name.is_some() {
-            link.insert("name".to_strbuf(), self.name.to_json());
+            link.insert("name".to_string(), self.name.to_json());
         }
 
         if self.title.is_some() {
-            link.insert("title".to_strbuf(), self.title.to_json());
+            link.insert("title".to_string(), self.title.to_json());
         }
 
         if self.profile.is_some() {
-            link.insert("profile".to_strbuf(), self.profile.to_json());
+            link.insert("profile".to_string(), self.profile.to_json());
         }
 
         if self.hreflang.is_some() {
-            link.insert("hreflang".to_strbuf(), self.hreflang.to_json());
+            link.insert("hreflang".to_string(), self.hreflang.to_json());
         }
 
         json::Object(link)
@@ -236,31 +236,31 @@ impl ToJson for Resource {
         if self.links.len() > 0 {
             for (rel, links) in self.links.iter() {
                 if links.len() > 1 || (rel.as_slice() == "curies") {
-                    link_rels.insert(rel.as_slice().into_strbuf(), (*links).to_json());
+                    link_rels.insert(rel.as_slice().into_string(), (*links).to_json());
                 } else {
-                    link_rels.insert(rel.as_slice().into_strbuf(), links.get(0).to_json());
+                    link_rels.insert(rel.as_slice().into_string(), links.get(0).to_json());
                 }
 
             }
 
-            hal.insert("_links".to_strbuf(), link_rels.to_json());
+            hal.insert("_links".to_string(), link_rels.to_json());
         }
 
 
         for (k, v) in self.state.iter() {
-            hal.insert(k.clone().into_strbuf(), v.to_json());
+            hal.insert(k.clone().into_string(), v.to_json());
         }
 
         if self.resources.len() > 0 {
             for (rel, resources) in self.resources.iter() {
                 if resources.len() > 1 {
-                    embeds.insert(rel.as_slice().into_strbuf(), resources.to_json());
+                    embeds.insert(rel.as_slice().into_string(), resources.to_json());
                 } else {
-                    embeds.insert(rel.as_slice().into_strbuf(), resources.get(0).to_json());
+                    embeds.insert(rel.as_slice().into_string(), resources.get(0).to_json());
                 }
             }
 
-            hal.insert("_embedded".to_strbuf(), embeds.to_json());
+            hal.insert("_embedded".to_string(), embeds.to_json());
         }
 
         json::Object(hal)
