@@ -2,7 +2,7 @@
 A pure rust library for generating Hal responses.
  */
 
-#![crate_id = "github.com/hjr3/rust-hal#hal:0.0"]
+#![crate_name = "rust-hal"]
 #![crate_type = "lib"]
 
 #[warn(non_camel_case_types)]
@@ -146,7 +146,7 @@ impl Link {
 
 impl ToJson for Link {
     fn to_json(&self) -> json::Json {
-        let mut link = box TreeMap::new();
+        let mut link = TreeMap::new();
         link.insert("href".to_string(), self.href.to_json());
 
         if self.templated.is_some() {
@@ -229,7 +229,7 @@ impl Resource {
 
 impl ToJson for Resource {
     fn to_json(&self) -> json::Json {
-        let mut hal = box TreeMap::new();
+        let mut hal = TreeMap::new();
         let mut link_rels = box TreeMap::new();
         let mut embeds = box TreeMap::new();
 
@@ -238,7 +238,7 @@ impl ToJson for Resource {
                 if links.len() > 1 || (rel.as_slice() == "curies") {
                     link_rels.insert(rel.as_slice().into_string(), (*links).to_json());
                 } else {
-                    link_rels.insert(rel.as_slice().into_string(), links.get(0).to_json());
+                    link_rels.insert(rel.as_slice().into_string(), links[0].to_json());
                 }
 
             }
@@ -256,7 +256,7 @@ impl ToJson for Resource {
                 if resources.len() > 1 {
                     embeds.insert(rel.as_slice().into_string(), resources.to_json());
                 } else {
-                    embeds.insert(rel.as_slice().into_string(), resources.get(0).to_json());
+                    embeds.insert(rel.as_slice().into_string(), resources[0].to_json());
                 }
             }
 

@@ -5,8 +5,8 @@ BUILDDIR := build
 
 HAL_LIB_FILE := src/hal.rs
 HAL_FILES := src/*.rs
-HAL_LIB := $(foreach file,$(shell $(RUSTC) --crate-file-name $(HAL_LIB_FILE)),$(BUILDDIR)/$(file))
-HAL_TEST := $(BUILDDIR)/$(shell $(RUSTC) --test --crate-file-name $(HAL_LIB_FILE))
+HAL_LIB := $(foreach file,$(shell $(RUSTC) --print-file-name $(HAL_LIB_FILE)),$(BUILDDIR)/$(file))
+HAL_TEST := $(BUILDDIR)/$(shell $(RUSTC) --test --print-file-name $(HAL_LIB_FILE))
 
 $(BUILDDIR):
 	mkdir -p $@
