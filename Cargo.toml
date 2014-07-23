@@ -1,0 +1,9 @@
+[package]
+
+name = "rust-hal"
+version = "0.0.1"
+authors = [ "herman@hermanradtke.com" ]
+
+[[lib]]
+
+name = "hal"

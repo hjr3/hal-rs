@@ -2,7 +2,7 @@
 A pure rust library for generating Hal responses.
  */
 
-#![crate_name = "rust-hal"]
+#![crate_name = "hal"]
 #![crate_type = "lib"]
 
 #[warn(non_camel_case_types)]
