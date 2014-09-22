@@ -10,6 +10,7 @@ A pure rust library for generating Hal responses.
 extern crate serialize;
 extern crate collections;
 
+use std::string::String;
 use std::collections::HashMap;
 use std::collections::TreeMap;
 use serialize::json::{ToJson, Json};
@@ -22,10 +23,10 @@ mod tests;
 #[deriving(Clone, Encodable)]
 pub enum HalState {
     Number(f64),
-    String(String),
+    HalString(String),
     Boolean(bool),
     Null,
-    List(List),
+    HalList(List),
 }
 
 pub type List = Vec<HalState>;
@@ -53,25 +54,25 @@ impl ToHalState for bool {
 }
 
 impl ToHalState for String {
-    fn to_hal_state(&self) -> HalState { String((*self).clone()) }
+    fn to_hal_state(&self) -> HalState { HalString((*self).clone()) }
 }
 
 impl ToHalState for &'static str {
-    fn to_hal_state(&self) -> HalState { String((*self).to_string()) }
+    fn to_hal_state(&self) -> HalState { HalString((*self).to_string()) }
 }
 
 impl<T:ToHalState> ToHalState for Vec<T> {
-    fn to_hal_state(&self) -> HalState { List(self.iter().map(|elt| elt.to_hal_state()).collect()) }
+    fn to_hal_state(&self) -> HalState { HalList(self.iter().map(|elt| elt.to_hal_state()).collect()) }
 }
 
 impl ToJson for HalState {
     fn to_json(&self) -> Json { 
         match *self {
             Number(v) => v.to_json(),
-            String(ref v) => v.to_json(),
+            HalString(ref v) => v.to_json(),
             Boolean(v) => v.to_json(),
             Null => ().to_json(),
-            List(ref v) => v.to_json(),
+            HalList(ref v) => v.to_json(),
         }
     }
 }
