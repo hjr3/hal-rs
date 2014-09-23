@@ -10,7 +10,6 @@ A pure rust library for generating Hal responses.
 extern crate serialize;
 extern crate collections;
 
-use std::string::String;
 use std::collections::HashMap;
 use std::collections::TreeMap;
 use serialize::json::{ToJson, Json};
