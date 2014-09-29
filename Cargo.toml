@@ -1,6 +1,6 @@
 [package]
 
-name = "rust-hal"
+name = "hal-rs"
 version = "0.0.1"
 authors = [ "herman@hermanradtke.com" ]
 
