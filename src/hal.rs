@@ -11,6 +11,7 @@ extern crate serialize;
 extern crate collections;
 
 use std::collections::HashMap;
+use std::collections::hashmap::{Occupied, Vacant};
 use std::collections::TreeMap;
 use serialize::json::{ToJson, Json};
 use serialize::{json, Encodable};
@@ -205,10 +206,17 @@ impl Resource {
 
     pub fn add_link(self, rel: &str, link: Link) -> Resource {
         let mut resource = self.clone();
-        let l = vec![link.clone()];
-        resource.links.insert_or_update_with(String::from_str(rel), l, |_, links| {
-            links.push(link.clone())
-        });
+        match resource.links.entry(String::from_str(rel)) {
+            Vacant(entry) => {
+                let l = vec![link.clone()];
+                entry.set(l);
+            },
+            Occupied(entry) => {
+                let links = entry.into_mut();
+                links.push(link.clone());
+            }
+        };
+
         resource
     }
 
@@ -219,10 +227,17 @@ impl Resource {
 
     pub fn add_resource(self, rel: &str, resource: Resource) -> Resource {
         let mut new_r = self.clone();
-        let r = vec![resource.clone()];
-        new_r.resources.insert_or_update_with(String::from_str(rel), r, |_, resources| {
-            resources.push(resource.clone())
-        });
+        match new_r.resources.entry(String::from_str(rel)) {
+            Vacant(entry) => {
+                let r = vec![resource.clone()];
+                entry.set(r);
+            },
+            Occupied(entry) => {
+                let resources = entry.into_mut();
+                resources.push(resource.clone());
+            }
+        }
+
         new_r
     }
 }
