@@ -4,12 +4,21 @@ A pure rust library for generating Hal responses.
 
 [![Build Status](https://travis-ci.org/hjr3/hal-rs.svg)](https://travis-ci.org/hjr3/hal-rs)
 
-## Example
+## Builds
+
+Running the tests:
+
+```
+$ cargo test
+```
+
+## Examples
+
+See [hal-rs-demo](https://github.com/hjr3/hal-rs-demo) for actual working example.
+
+A sample program that shows the expressiveness of the Hal library:
 
 ```rust
-/// example.rs
-/// rustc -L /path/to/libhal example.rs
-
 extern crate hal;
 extern crate serialize;
 
