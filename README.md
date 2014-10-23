@@ -16,7 +16,7 @@ $ cargo test
 
 See [hal-rs-demo](https://github.com/hjr3/hal-rs-demo) for actual working example.
 
-A sample program that shows the expressiveness of the Hal library:
+A sample program that shows how to create a Hal response manually or by implementing `ToHal` on your struct.
 
 ```rust
 extern crate hal;
