@@ -11,7 +11,7 @@ extern crate serialize;
 extern crate collections;
 
 use std::collections::HashMap;
-use std::collections::hashmap::{Occupied, Vacant};
+use std::collections::hash_map::{Occupied, Vacant};
 use std::collections::TreeMap;
 use serialize::json::{ToJson, Json};
 use serialize::{json, Encodable};
