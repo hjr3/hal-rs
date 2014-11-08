@@ -198,9 +198,9 @@ impl Resource {
         Resource::new().add_link("self", Link::new(uri))
     }
 
-    pub fn add_state(self, key: &str, value: HalState) -> Resource {
+    pub fn add_state<V>(self, key: &str, value: V) -> Resource where V: ToHalState {
         let mut resource = self.clone();
-        resource.state.insert(String::from_str(key), value);
+        resource.state.insert(String::from_str(key), value.to_hal_state());
         resource
     }
 
@@ -283,5 +283,5 @@ impl ToJson for Resource {
 }
 
 pub trait ToHal {
-    fn to_hal(&self) -> Resource;
+    fn to_hal(self) -> Resource;
 }
