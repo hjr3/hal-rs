@@ -32,7 +32,7 @@ struct Order {
 }
 
 impl ToHal for Order {
-    fn to_hal(&self) -> Resource {
+    fn to_hal(self) -> Resource {
         Resource::with_self("https://www.example.com/orders/1")
             .add_state("total", self.total)
             .add_state("currency", self.currency)
