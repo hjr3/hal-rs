@@ -1,5 +1,7 @@
 use super::{Link, Resource, ToHal};
+use serialize::json;
 use serialize::json::ToJson;
+use std::collections::{HashMap, TreeMap};
 
 struct Order {
     total: f64,
@@ -22,6 +24,24 @@ fn link_new() {
 
     let output = r#"{"href":"https://www.example.com"}"#;
     assert_eq!(link.to_json().to_string(), output.to_string());
+}
+
+#[test]
+fn link_from_json() {
+    let json_str = r#"{"deprecation":"https://www.example.com/newer","href":"https://www.example.com","hreflang":"en","name":"example","profile":"http://tools.ietf.org/html/draft-wilde-profile-link-04","templated":true,"title":"An example link","type":"text/html"}"#;
+
+    let json = json::from_str(json_str).unwrap();
+
+    let link = Link::new("https://www.example.com")
+        .templated(true)
+        .deprecation("https://www.example.com/newer")
+        .media_type("text/html")
+        .name("example")
+        .title("An example link")
+        .profile("http://tools.ietf.org/html/draft-wilde-profile-link-04")
+        .hreflang("en");
+
+    assert_eq!(link, Link::from_json(json.as_object().unwrap()));
 }
 
 #[test]
@@ -62,6 +82,17 @@ fn hal_with_self() {
 }
 
 #[test]
+fn hal_from_json() {
+    let hal = Resource::with_self("https://www.example.com")
+        .add_state("currentlyProcessing", 14i64)
+        .add_state("currency", "USD")
+        .add_state("active", true)
+        .add_state("errors", ());
+
+    assert_eq!(hal, Resource::from_json(hal.to_json()));
+}
+
+#[test]
 fn hal_with_self_and_link() {
     let output = r#"{"_links":{"orders":{"href":"https://www.example.com/orders"},"self":{"href":"https://www.example.com"}}}"#;
     let hal = Resource::with_self("https://www.example.com")
@@ -92,7 +123,7 @@ fn hal_and_add_curie() {
 #[test]
 fn hal_add_state() {
     let hal = Resource::new()
-        .add_state("currentlyProcessing", 14)
+        .add_state("currentlyProcessing", 14i64)
         .add_state("currency", "USD")
         .add_state("active", true)
         .add_state("errors", ());
@@ -109,8 +140,8 @@ fn hal_spec() {
         .add_link("ea:find", Link::new("/orders{?id}").templated(true))
         .add_link("ea:admin", Link::new("/admins/2").title("Fred"))
         .add_link("ea:admin", Link::new("/admins/5").title("Kate"))
-        .add_state("currentlyProcessing", 14)
-        .add_state("shippedToday", 14)
+        .add_state("currentlyProcessing", 14i64)
+        .add_state("shippedToday", 14i64)
         .add_resource("ea:order",
             Resource::with_self("/orders/123")
                 .add_link("ea:basket", Link::new("/baskets/98712"))
@@ -148,5 +179,27 @@ fn list_to_hal_state() {
         .add_state("friends", friends);
 
     let output = r#"{"_links":{"self":{"href":"/user/1"}},"friends":["Mary","Timmy","Sally","Wally"]}"#;
+    assert_eq!(hal.to_json().to_string(), output.to_string());
+}
+
+#[test]
+fn object_to_hal_state() {
+    let mut fullname = TreeMap::new();
+    fullname.insert("given".to_string(), "John");
+    fullname.insert("family".to_string(), "Doe");
+
+    let hal = Resource::with_self("/user/1")
+        .add_state("fullname", fullname);
+
+    let output = r#"{"_links":{"self":{"href":"/user/1"}},"fullname":{"family":"Doe","given":"John"}}"#;
+    assert_eq!(hal.to_json().to_string(), output.to_string());
+
+    let mut fullname = HashMap::new();
+    fullname.insert("given".to_string(), "John");
+    fullname.insert("family".to_string(), "Doe");
+
+    let hal = Resource::with_self("/user/1")
+        .add_state("fullname", fullname);
+
     assert_eq!(hal.to_json().to_string(), output.to_string());
 }

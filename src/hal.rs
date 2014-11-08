@@ -13,23 +13,27 @@ extern crate collections;
 use std::collections::HashMap;
 use std::collections::hash_map::{Occupied, Vacant};
 use std::collections::TreeMap;
-use serialize::json::{ToJson, Json};
-use serialize::{json, Encodable};
+use serialize::json::{ToJson, Json, JsonObject};
+use serialize::{json};
 
 #[cfg(test)]
 mod tests;
 
 /// Represents Hal data value
-#[deriving(Clone, Encodable)]
+#[deriving(Clone, PartialEq, Show)]
 pub enum HalState {
-    Number(f64),
+    I64(i64),
+    F64(f64),
+    U64(u64),
     HalString(String),
     Boolean(bool),
     Null,
     HalList(List),
+    Object(HalObject),
 }
 
 pub type List = Vec<HalState>;
+pub type HalObject = TreeMap<String, HalState>;
 
 /// A trait for converting values to Hal data
 pub trait ToHalState {
@@ -38,11 +42,19 @@ pub trait ToHalState {
 }
 
 impl ToHalState for int {
-    fn to_hal_state(&self) -> HalState { Number(*self as f64) }
+    fn to_hal_state(&self) -> HalState { I64(*self as i64) }
+}
+
+impl ToHalState for i64 {
+    fn to_hal_state(&self) -> HalState { I64(*self) }
+}
+
+impl ToHalState for u64 {
+    fn to_hal_state(&self) -> HalState { U64(*self) }
 }
 
 impl ToHalState for f64 {
-    fn to_hal_state(&self) -> HalState { Number(*self) }
+    fn to_hal_state(&self) -> HalState { F64(*self) }
 }
 
 impl ToHalState for () {
@@ -65,19 +77,57 @@ impl<T:ToHalState> ToHalState for Vec<T> {
     fn to_hal_state(&self) -> HalState { HalList(self.iter().map(|elt| elt.to_hal_state()).collect()) }
 }
 
-impl ToJson for HalState {
-    fn to_json(&self) -> Json { 
+impl<T:ToHalState> ToHalState for TreeMap<String, T> {
+    fn to_hal_state(&self) -> HalState { 
+        let mut t = TreeMap::new();
+        for (key, value) in self.iter() {
+            t.insert((*key).clone(), value.to_hal_state());
+        }
+        Object(t)
+    }
+}
+
+impl<T:ToHalState> ToHalState for HashMap<String, T> {
+    fn to_hal_state(&self) -> HalState { 
+        let mut t = TreeMap::new();
+        for (key, value) in self.iter() {
+            t.insert((*key).clone(), value.to_hal_state());
+        }
+        Object(t)
+    }
+}
+
+impl ToHalState for Json {
+    fn to_hal_state(&self) -> HalState {
         match *self {
-            Number(v) => v.to_json(),
-            HalString(ref v) => v.to_json(),
-            Boolean(v) => v.to_json(),
-            Null => ().to_json(),
-            HalList(ref v) => v.to_json(),
+            Json::I64(v) => v.to_hal_state(),
+            Json::U64(v) => v.to_hal_state(),
+            Json::F64(v) => v.to_hal_state(),
+            Json::String(ref v) => v.to_hal_state(),
+            Json::Boolean(v) => v.to_hal_state(),
+            Json::List(ref v) => v.to_hal_state(),
+            Json::Object(ref v) => v.to_hal_state(),
+            Json::Null => ().to_hal_state(),
         }
     }
 }
 
-#[deriving(Clone, Encodable)]
+impl ToJson for HalState {
+    fn to_json(&self) -> Json { 
+        match *self {
+            I64(v) => v.to_json(),
+            F64(v) => v.to_json(),
+            U64(v) => v.to_json(),
+            HalString(ref v) => v.to_json(),
+            Boolean(v) => v.to_json(),
+            Null => ().to_json(),
+            HalList(ref v) => v.to_json(),
+            Object(ref v) => v.to_json(),
+        }
+    }
+}
+
+#[deriving(Clone, PartialEq, Show)]
 pub struct Link {
     href: String,
     templated: Option<bool>,
@@ -100,6 +150,42 @@ impl Link {
         title: None,
         hreflang: None
         }
+    }
+
+    pub fn from_json(json: &JsonObject) -> Link {
+        let url = json.get(&"href".to_string());
+
+        if url.is_none() {
+            panic!("Unable to create Link without href: {}", json);
+        }
+
+        let mut link = Link::new(url.unwrap().as_string().unwrap());
+
+        for (key, value) in json.iter() {
+            let k = key.as_slice();
+
+            // todo: we use these same hard coded strings to conver to json
+            if k == "templated" {
+                link = link.templated(value.as_boolean().unwrap());
+            } else {
+                let v = value.as_string().unwrap();
+                if k == "type" {
+                    link = link.media_type(v);
+                } else if k == "deprecation" {
+                    link = link.deprecation(v);
+                } else if k == "name" {
+                    link = link.name(v);
+                } else if k == "title" {
+                    link = link.title(v);
+                } else if k == "profile" {
+                    link = link.profile(v);
+                } else if k == "hreflang" {
+                    link = link.hreflang(v);
+                }
+            }
+        }
+
+        link
     }
 
     pub fn templated(self, is_template: bool) -> Link {
@@ -182,7 +268,8 @@ impl ToJson for Link {
     }
 }
 
-#[deriving(Clone, Encodable)]
+// todo: maybe just convert these to TreeMap? would save a lot of code
+#[deriving(Clone, PartialEq, Show)]
 pub struct Resource {
     state: HashMap<String, HalState>,
     links: HashMap<String, Vec<Link>>,
@@ -196,6 +283,31 @@ impl Resource {
 
     pub fn with_self(uri: &str) -> Resource {
         Resource::new().add_link("self", Link::new(uri))
+    }
+
+    /// This feature is still experimental.
+    pub fn from_json(json: Json) -> Resource {
+        let mut resource = Resource::new();
+
+        if json.is_object() {
+            let json = json.as_object().unwrap();
+            for (key, value) in json.iter() {
+                if key.as_slice() == "_links" {
+                    let links = value.as_object().unwrap();
+
+                    for (link_key, link_object) in links.iter() {
+                        resource = resource.add_link(
+                            link_key.as_slice(),
+                            Link::from_json(link_object.as_object().unwrap())
+                        );
+                    }
+                } else {
+                    resource = resource.add_state(key.as_slice(), value.clone());
+                }
+            }
+        }
+
+        resource
     }
 
     pub fn add_state<V>(self, key: &str, value: V) -> Resource where V: ToHalState {
