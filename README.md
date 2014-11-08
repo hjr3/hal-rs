@@ -34,9 +34,9 @@ struct Order {
 impl ToHal for Order {
     fn to_hal(&self) -> Resource {
         Resource::with_self("https://www.example.com/orders/1")
-            .add_state("total", self.total.to_hal_state())
-            .add_state("currency", self.currency.to_hal_state())
-            .add_state("status", self.status.to_hal_state())
+            .add_state("total", self.total)
+            .add_state("currency", self.currency)
+            .add_state("status", self.status)
     }
 }
 
@@ -47,23 +47,23 @@ fn main() {
         .add_link("ea:find", Link::new("/orders{?id}").templated(true))
         .add_link("ea:admin", Link::new("/admins/2").title("Fred"))
         .add_link("ea:admin", Link::new("/admins/5").title("Kate"))
-        .add_state("currentlyProcessing", (14 as int).to_hal_state())
-        .add_state("shippedToday", (14 as int).to_hal_state())
+        .add_state("currentlyProcessing", 14)
+        .add_state("shippedToday", 14)
         .add_resource("ea:order",
             Resource::with_self("/orders/123")
                 .add_link("ea:basket", Link::new("/baskets/98712"))
                 .add_link("ea:customer", Link::new("/customers/7809"))
-                .add_state("total", (30.00 as f64).to_hal_state())
-                .add_state("currency", "USD".to_hal_state())
-                .add_state("status", "shipped".to_hal_state())
+                .add_state("total", (30.00 as f64))
+                .add_state("currency", "USD")
+                .add_state("status", "shipped")
         )
         .add_resource("ea:order",
             Resource::with_self("/orders/124")
                 .add_link("ea:basket", Link::new("/baskets/97213"))
                 .add_link("ea:customer", Link::new("/customers/12369"))
-                .add_state("total", (20.00 as f64).to_hal_state())
-                .add_state("currency", "USD".to_hal_state())
-                .add_state("status", "processing".to_hal_state())
+                .add_state("total", (20.00 as f64))
+                .add_state("currency", "USD")
+                .add_state("status", "processing")
         );
 
     println!("Creating Hal using a DSL: {}", hal.to_json().to_pretty_str());
