@@ -2,6 +2,8 @@
 
 name = "hal-rs"
 version = "0.0.1"
+description = "A pure rust library for generating Hal responses."
+license = "MIT"
 authors = [ "herman@hermanradtke.com" ]
 
 [lib]
