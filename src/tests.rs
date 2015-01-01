@@ -1,7 +1,8 @@
-use super::{Link, Resource, ToHal, ToHalState, I64, Null};
+use super::{Link, Resource, ToHal, ToHalState};
+use super::HalState::{I64, Null};
 use serialize::json;
 use serialize::json::ToJson;
-use std::collections::{HashMap, TreeMap};
+use std::collections::{HashMap, BTreeMap};
 
 struct Order {
     total: f64,
@@ -41,7 +42,7 @@ fn link_from_json() {
         .profile("http://tools.ietf.org/html/draft-wilde-profile-link-04")
         .hreflang("en");
 
-    assert_eq!(link, Link::from_json(json.as_object().unwrap()));
+    assert_eq!(link, Link::from_json(&json));
 }
 
 #[test]
@@ -159,7 +160,7 @@ fn hal_spec() {
                 .add_state("status", "processing")
         );
 
-    let output = r#"{"_embedded":{"ea:order":[{"_links":{"ea:basket":{"href":"/baskets/98712"},"ea:customer":{"href":"/customers/7809"},"self":{"href":"/orders/123"}},"currency":"USD","status":"shipped","total":30},{"_links":{"ea:basket":{"href":"/baskets/97213"},"ea:customer":{"href":"/customers/12369"},"self":{"href":"/orders/124"}},"currency":"USD","status":"processing","total":20}]},"_links":{"curies":[{"href":"http://example.com/docs/rels/{rel}","name":"ea","templated":true}],"ea:admin":[{"href":"/admins/2","title":"Fred"},{"href":"/admins/5","title":"Kate"}],"ea:find":{"href":"/orders{?id}","templated":true},"next":{"href":"/orders?page=2"},"self":{"href":"/orders"}},"currentlyProcessing":14,"shippedToday":14}"#;
+    let output = r#"{"_embedded":{"ea:order":[{"_links":{"ea:basket":{"href":"/baskets/98712"},"ea:customer":{"href":"/customers/7809"},"self":{"href":"/orders/123"}},"currency":"USD","status":"shipped","total":30.0},{"_links":{"ea:basket":{"href":"/baskets/97213"},"ea:customer":{"href":"/customers/12369"},"self":{"href":"/orders/124"}},"currency":"USD","status":"processing","total":20.0}]},"_links":{"curies":[{"href":"http://example.com/docs/rels/{rel}","name":"ea","templated":true}],"ea:admin":[{"href":"/admins/2","title":"Fred"},{"href":"/admins/5","title":"Kate"}],"ea:find":{"href":"/orders{?id}","templated":true},"next":{"href":"/orders?page=2"},"self":{"href":"/orders"}},"currentlyProcessing":14,"shippedToday":14}"#;
     assert_eq!(hal.to_json().to_string(), output.to_string());
 }
 
@@ -167,7 +168,7 @@ fn hal_spec() {
 fn order_to_hal() {
     let order = Order { total: 20.00 as f64, currency: String::from_str("USD"), status: String::from_str("processing") };
 
-    let output = r#"{"_links":{"self":{"href":"https://www.example.com/orders/1"}},"currency":"USD","status":"processing","total":20}"#;
+    let output = r#"{"_links":{"self":{"href":"https://www.example.com/orders/1"}},"currency":"USD","status":"processing","total":20.0}"#;
     assert_eq!(order.to_hal().to_json().to_string(), output.to_string());
 }
 
@@ -184,7 +185,7 @@ fn list_to_hal_state() {
 
 #[test]
 fn object_to_hal_state() {
-    let mut fullname = TreeMap::new();
+    let mut fullname = BTreeMap::new();
     fullname.insert("given".to_string(), "John");
     fullname.insert("family".to_string(), "Doe");
 

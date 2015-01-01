@@ -11,9 +11,9 @@ extern crate serialize;
 extern crate collections;
 
 use std::collections::HashMap;
-use std::collections::hash_map::{Occupied, Vacant};
-use std::collections::TreeMap;
-use serialize::json::{ToJson, Json, JsonObject};
+use std::collections::hash_map::Entry::{Occupied, Vacant};
+use std::collections::BTreeMap;
+use serialize::json::{ToJson, Json};
 use serialize::{json};
 
 #[cfg(test)]
@@ -33,7 +33,7 @@ pub enum HalState {
 }
 
 pub type List = Vec<HalState>;
-pub type HalObject = TreeMap<String, HalState>;
+pub type HalObject = BTreeMap<String, HalState>;
 
 /// A trait for converting values to Hal data
 pub trait ToHalState {
@@ -42,65 +42,65 @@ pub trait ToHalState {
 }
 
 impl ToHalState for int {
-    fn to_hal_state(&self) -> HalState { I64(*self as i64) }
+    fn to_hal_state(&self) -> HalState { HalState::I64(*self as i64) }
 }
 
 impl ToHalState for i64 {
-    fn to_hal_state(&self) -> HalState { I64(*self) }
+    fn to_hal_state(&self) -> HalState { HalState::I64(*self) }
 }
 
 impl ToHalState for u64 {
-    fn to_hal_state(&self) -> HalState { U64(*self) }
+    fn to_hal_state(&self) -> HalState { HalState::U64(*self) }
 }
 
 impl ToHalState for f64 {
-    fn to_hal_state(&self) -> HalState { F64(*self) }
+    fn to_hal_state(&self) -> HalState { HalState::F64(*self) }
 }
 
 impl ToHalState for () {
-    fn to_hal_state(&self) -> HalState { Null }
+    fn to_hal_state(&self) -> HalState { HalState::Null }
 }
 
 impl ToHalState for bool {
-    fn to_hal_state(&self) -> HalState { Boolean(*self) }
+    fn to_hal_state(&self) -> HalState { HalState::Boolean(*self) }
 }
 
 impl ToHalState for String {
-    fn to_hal_state(&self) -> HalState { HalString((*self).clone()) }
+    fn to_hal_state(&self) -> HalState { HalState::HalString((*self).clone()) }
 }
 
 impl ToHalState for &'static str {
-    fn to_hal_state(&self) -> HalState { HalString((*self).to_string()) }
+    fn to_hal_state(&self) -> HalState { HalState::HalString((*self).to_string()) }
 }
 
 impl<T:ToHalState> ToHalState for Vec<T> {
-    fn to_hal_state(&self) -> HalState { HalList(self.iter().map(|elt| elt.to_hal_state()).collect()) }
+    fn to_hal_state(&self) -> HalState { HalState::HalList(self.iter().map(|elt| elt.to_hal_state()).collect()) }
 }
 
-impl<T:ToHalState> ToHalState for TreeMap<String, T> {
+impl<T:ToHalState> ToHalState for BTreeMap<String, T> {
     fn to_hal_state(&self) -> HalState { 
-        let mut t = TreeMap::new();
+        let mut t = BTreeMap::new();
         for (key, value) in self.iter() {
             t.insert((*key).clone(), value.to_hal_state());
         }
-        Object(t)
+        HalState::Object(t)
     }
 }
 
 impl<T:ToHalState> ToHalState for HashMap<String, T> {
     fn to_hal_state(&self) -> HalState { 
-        let mut t = TreeMap::new();
+        let mut t = BTreeMap::new();
         for (key, value) in self.iter() {
             t.insert((*key).clone(), value.to_hal_state());
         }
-        Object(t)
+        HalState::Object(t)
     }
 }
 
 impl<T:ToHalState> ToHalState for Option<T> {
     fn to_hal_state(&self) -> HalState {
         match *self {
-            None => Null,
+            None => HalState::Null,
             Some(ref value) => value.to_hal_state()
         }
     }
@@ -114,7 +114,7 @@ impl ToHalState for Json {
             Json::F64(v) => v.to_hal_state(),
             Json::String(ref v) => v.to_hal_state(),
             Json::Boolean(v) => v.to_hal_state(),
-            Json::List(ref v) => v.to_hal_state(),
+            Json::Array(ref v) => v.to_hal_state(),
             Json::Object(ref v) => v.to_hal_state(),
             Json::Null => ().to_hal_state(),
         }
@@ -124,14 +124,14 @@ impl ToHalState for Json {
 impl ToJson for HalState {
     fn to_json(&self) -> Json { 
         match *self {
-            I64(v) => v.to_json(),
-            F64(v) => v.to_json(),
-            U64(v) => v.to_json(),
-            HalString(ref v) => v.to_json(),
-            Boolean(v) => v.to_json(),
-            Null => ().to_json(),
-            HalList(ref v) => v.to_json(),
-            Object(ref v) => v.to_json(),
+            HalState::I64(v) => v.to_json(),
+            HalState::F64(v) => v.to_json(),
+            HalState::U64(v) => v.to_json(),
+            HalState::HalString(ref v) => v.to_json(),
+            HalState::Boolean(v) => v.to_json(),
+            HalState::Null => ().to_json(),
+            HalState::HalList(ref v) => v.to_json(),
+            HalState::Object(ref v) => v.to_json(),
         }
     }
 }
@@ -161,38 +161,47 @@ impl Link {
         }
     }
 
-    pub fn from_json(json: &JsonObject) -> Link {
-        let url = json.get(&"href".to_string());
+    pub fn from_json(json: &Json) -> Link {
+        let ref url = json["href".as_slice()];
 
-        if url.is_none() {
-            panic!("Unable to create Link without href: {}", json);
-        }
+        let mut link = Link::new(url.as_string().unwrap());
 
-        let mut link = Link::new(url.unwrap().as_string().unwrap());
+        // todo: we use these same hard coded strings to conver to json
+        // todo: make this a macro
+        if json.search("templated").is_some() {
+            let value = json.search("templated").unwrap();
+            link = link.templated(value.as_boolean().unwrap());
+        } 
 
-        for (key, value) in json.iter() {
-            let k = key.as_slice();
+        if json.search("type").is_some() {
+            let value = json.search("type").unwrap();
+            link = link.media_type(value.as_string().unwrap());
+        } 
 
-            // todo: we use these same hard coded strings to conver to json
-            if k == "templated" {
-                link = link.templated(value.as_boolean().unwrap());
-            } else {
-                let v = value.as_string().unwrap();
-                if k == "type" {
-                    link = link.media_type(v);
-                } else if k == "deprecation" {
-                    link = link.deprecation(v);
-                } else if k == "name" {
-                    link = link.name(v);
-                } else if k == "title" {
-                    link = link.title(v);
-                } else if k == "profile" {
-                    link = link.profile(v);
-                } else if k == "hreflang" {
-                    link = link.hreflang(v);
-                }
-            }
-        }
+        if json.search("deprecation").is_some() {
+            let value = json.search("deprecation").unwrap();
+            link = link.deprecation(value.as_string().unwrap());
+        } 
+
+        if json.search("name").is_some() {
+            let value = json.search("name").unwrap();
+            link = link.name(value.as_string().unwrap());
+        } 
+
+        if json.search("title").is_some() {
+            let value = json.search("title").unwrap();
+            link = link.title(value.as_string().unwrap());
+        } 
+
+        if json.search("profile").is_some() {
+            let value = json.search("profile").unwrap();
+            link = link.profile(value.as_string().unwrap());
+        } 
+
+        if json.search("hreflang").is_some() {
+            let value = json.search("hreflang").unwrap();
+            link = link.hreflang(value.as_string().unwrap());
+        } 
 
         link
     }
@@ -242,7 +251,7 @@ impl Link {
 
 impl ToJson for Link {
     fn to_json(&self) -> json::Json {
-        let mut link = TreeMap::new();
+        let mut link = BTreeMap::new();
         link.insert("href".to_string(), self.href.to_json());
 
         if self.templated.is_some() {
@@ -273,11 +282,11 @@ impl ToJson for Link {
             link.insert("hreflang".to_string(), self.hreflang.to_json());
         }
 
-        json::Object(link)
+        json::Json::Object(link)
     }
 }
 
-// todo: maybe just convert these to TreeMap? would save a lot of code
+// todo: maybe just convert these to BTreeMap? would save a lot of code
 #[deriving(Clone, PartialEq, Show)]
 pub struct Resource {
     state: HashMap<String, HalState>,
@@ -307,7 +316,7 @@ impl Resource {
                     for (link_key, link_object) in links.iter() {
                         resource = resource.add_link(
                             link_key.as_slice(),
-                            Link::from_json(link_object.as_object().unwrap())
+                            Link::from_json(&link_object.to_json())
                         );
                     }
                 } else {
@@ -365,16 +374,16 @@ impl Resource {
 
 impl ToJson for Resource {
     fn to_json(&self) -> json::Json {
-        let mut hal = TreeMap::new();
-        let mut link_rels = box TreeMap::new();
-        let mut embeds = box TreeMap::new();
+        let mut hal = BTreeMap::new();
+        let mut link_rels = box BTreeMap::new();
+        let mut embeds = box BTreeMap::new();
 
         if self.links.len() > 0 {
             for (rel, links) in self.links.iter() {
                 if links.len() > 1 || (rel.as_slice() == "curies") {
-                    link_rels.insert(rel.as_slice().into_string(), (*links).to_json());
+                    link_rels.insert(rel.as_slice().to_string(), (*links).to_json());
                 } else {
-                    link_rels.insert(rel.as_slice().into_string(), links[0].to_json());
+                    link_rels.insert(rel.as_slice().to_string(), links[0].to_json());
                 }
 
             }
@@ -384,22 +393,22 @@ impl ToJson for Resource {
 
 
         for (k, v) in self.state.iter() {
-            hal.insert(k.clone().into_string(), v.to_json());
+            hal.insert(k.clone().to_string(), v.to_json());
         }
 
         if self.resources.len() > 0 {
             for (rel, resources) in self.resources.iter() {
                 if resources.len() > 1 {
-                    embeds.insert(rel.as_slice().into_string(), resources.to_json());
+                    embeds.insert(rel.as_slice().to_string(), resources.to_json());
                 } else {
-                    embeds.insert(rel.as_slice().into_string(), resources[0].to_json());
+                    embeds.insert(rel.as_slice().to_string(), resources[0].to_json());
                 }
             }
 
             hal.insert("_embedded".to_string(), embeds.to_json());
         }
 
-        json::Object(hal)
+        json::Json::Object(hal)
     }
 }
 
