@@ -97,6 +97,15 @@ impl<T:ToHalState> ToHalState for HashMap<String, T> {
     }
 }
 
+impl<T:ToHalState> ToHalState for Option<T> {
+    fn to_hal_state(&self) -> HalState {
+        match *self {
+            None => Null,
+            Some(ref value) => value.to_hal_state()
+        }
+    }
+}
+
 impl ToHalState for Json {
     fn to_hal_state(&self) -> HalState {
         match *self {

@@ -1,4 +1,4 @@
-use super::{Link, Resource, ToHal};
+use super::{Link, Resource, ToHal, ToHalState, I64, Null};
 use serialize::json;
 use serialize::json::ToJson;
 use std::collections::{HashMap, TreeMap};
@@ -202,4 +202,10 @@ fn object_to_hal_state() {
         .add_state("fullname", fullname);
 
     assert_eq!(hal.to_json().to_string(), output.to_string());
+}
+
+#[test]
+fn option_to_hal_state() {
+    assert_eq!(Some(15i).to_hal_state(), I64(15));
+    assert_eq!(None::<int>.to_hal_state(), Null);
 }
