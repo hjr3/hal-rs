@@ -9,3 +9,6 @@ authors = [ "herman@hermanradtke.com" ]
 [lib]
 
 name = "hal"
+
+[dependencies]
+rustc-serialize = "*"

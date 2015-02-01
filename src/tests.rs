@@ -1,6 +1,6 @@
 use super::{Link, Resource, ToHal, ToHalState};
 use super::HalState::{I64, Null};
-use serialize::json;
+use serialize::json::Json;
 use serialize::json::ToJson;
 use std::collections::{HashMap, BTreeMap};
 
@@ -31,7 +31,7 @@ fn link_new() {
 fn link_from_json() {
     let json_str = r#"{"deprecation":"https://www.example.com/newer","href":"https://www.example.com","hreflang":"en","name":"example","profile":"http://tools.ietf.org/html/draft-wilde-profile-link-04","templated":true,"title":"An example link","type":"text/html"}"#;
 
-    let json = json::from_str(json_str).unwrap();
+    let json = Json::from_str(json_str).unwrap();
 
     let link = Link::new("https://www.example.com")
         .templated(true)

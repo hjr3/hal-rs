@@ -4,10 +4,11 @@ A pure rust library for generating Hal responses.
 
 #![crate_name = "hal"]
 #![crate_type = "lib"]
+#![feature(collections, core, std_misc)]
 
 #[warn(non_camel_case_types)]
 
-extern crate serialize;
+extern crate "rustc-serialize" as serialize;
 extern crate collections;
 
 use std::collections::HashMap;
@@ -20,7 +21,7 @@ use serialize::{json};
 mod tests;
 
 /// Represents Hal data value
-#[derive(Clone, PartialEq, Show)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum HalState {
     I64(i64),
     F64(f64),
@@ -136,7 +137,7 @@ impl ToJson for HalState {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Show)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Link {
     href: String,
     templated: Option<bool>,
@@ -287,7 +288,7 @@ impl ToJson for Link {
 }
 
 // todo: maybe just convert these to BTreeMap? would save a lot of code
-#[derive(Clone, PartialEq, Show)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Resource {
     state: HashMap<String, HalState>,
     links: HashMap<String, Vec<Link>>,
