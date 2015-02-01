@@ -20,7 +20,7 @@ use serialize::{json};
 mod tests;
 
 /// Represents Hal data value
-#[deriving(Clone, PartialEq, Show)]
+#[derive(Clone, PartialEq, Show)]
 pub enum HalState {
     I64(i64),
     F64(f64),
@@ -41,7 +41,7 @@ pub trait ToHalState {
     fn to_hal_state(&self) -> HalState;
 }
 
-impl ToHalState for int {
+impl ToHalState for isize {
     fn to_hal_state(&self) -> HalState { HalState::I64(*self as i64) }
 }
 
@@ -136,7 +136,7 @@ impl ToJson for HalState {
     }
 }
 
-#[deriving(Clone, PartialEq, Show)]
+#[derive(Clone, Eq, PartialEq, Show)]
 pub struct Link {
     href: String,
     templated: Option<bool>,
@@ -287,7 +287,7 @@ impl ToJson for Link {
 }
 
 // todo: maybe just convert these to BTreeMap? would save a lot of code
-#[deriving(Clone, PartialEq, Show)]
+#[derive(Clone, PartialEq, Show)]
 pub struct Resource {
     state: HashMap<String, HalState>,
     links: HashMap<String, Vec<Link>>,
@@ -339,7 +339,7 @@ impl Resource {
         match resource.links.entry(String::from_str(rel)) {
             Vacant(entry) => {
                 let l = vec![link.clone()];
-                entry.set(l);
+                entry.insert(l);
             },
             Occupied(entry) => {
                 let links = entry.into_mut();
@@ -360,7 +360,7 @@ impl Resource {
         match new_r.resources.entry(String::from_str(rel)) {
             Vacant(entry) => {
                 let r = vec![resource.clone()];
-                entry.set(r);
+                entry.insert(r);
             },
             Occupied(entry) => {
                 let resources = entry.into_mut();
@@ -375,8 +375,8 @@ impl Resource {
 impl ToJson for Resource {
     fn to_json(&self) -> json::Json {
         let mut hal = BTreeMap::new();
-        let mut link_rels = box BTreeMap::new();
-        let mut embeds = box BTreeMap::new();
+        let mut link_rels = BTreeMap::new();
+        let mut embeds = BTreeMap::new();
 
         if self.links.len() > 0 {
             for (rel, links) in self.links.iter() {

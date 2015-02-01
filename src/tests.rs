@@ -207,6 +207,6 @@ fn object_to_hal_state() {
 
 #[test]
 fn option_to_hal_state() {
-    assert_eq!(Some(15i).to_hal_state(), I64(15));
-    assert_eq!(None::<int>.to_hal_state(), Null);
+    assert_eq!(Some(15i64).to_hal_state(), I64(15));
+    assert_eq!(None::<isize>.to_hal_state(), Null);
 }
