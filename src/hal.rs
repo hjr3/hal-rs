@@ -4,7 +4,7 @@ A pure rust library for generating Hal responses.
 
 #![crate_name = "hal"]
 #![crate_type = "lib"]
-#![feature(collections, core, std_misc)]
+#![feature(collections, core)]
 
 #[warn(non_camel_case_types)]
 
