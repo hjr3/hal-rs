@@ -4,11 +4,11 @@ A pure rust library for generating Hal responses.
 
 #![crate_name = "hal"]
 #![crate_type = "lib"]
-#![feature(collections, core, std_misc)]
+#![feature(collections, convert)]
 
 #[warn(non_camel_case_types)]
 
-extern crate "rustc-serialize" as serialize;
+extern crate rustc_serialize as serialize;
 extern crate collections;
 
 use std::collections::HashMap;
@@ -163,7 +163,7 @@ impl Link {
     }
 
     pub fn from_json(json: &Json) -> Link {
-        let ref url = json["href".as_slice()];
+        let ref url = json["href".as_ref()];
 
         let mut link = Link::new(url.as_string().unwrap());
 
@@ -311,17 +311,17 @@ impl Resource {
         if json.is_object() {
             let json = json.as_object().unwrap();
             for (key, value) in json.iter() {
-                if key.as_slice() == "_links" {
+                if key as &str == "_links" {
                     let links = value.as_object().unwrap();
 
                     for (link_key, link_object) in links.iter() {
                         resource = resource.add_link(
-                            link_key.as_slice(),
+                            link_key.as_ref(),
                             Link::from_json(&link_object.to_json())
                         );
                     }
                 } else {
-                    resource = resource.add_state(key.as_slice(), value.clone());
+                    resource = resource.add_state(key.as_ref(), value.clone());
                 }
             }
         }
@@ -381,10 +381,10 @@ impl ToJson for Resource {
 
         if self.links.len() > 0 {
             for (rel, links) in self.links.iter() {
-                if links.len() > 1 || (rel.as_slice() == "curies") {
-                    link_rels.insert(rel.as_slice().to_string(), (*links).to_json());
+                if links.len() > 1 || (rel as &str == "curies") {
+                    link_rels.insert(rel.clone(), (*links).to_json());
                 } else {
-                    link_rels.insert(rel.as_slice().to_string(), links[0].to_json());
+                    link_rels.insert(rel.clone(), links[0].to_json());
                 }
 
             }
@@ -400,9 +400,9 @@ impl ToJson for Resource {
         if self.resources.len() > 0 {
             for (rel, resources) in self.resources.iter() {
                 if resources.len() > 1 {
-                    embeds.insert(rel.as_slice().to_string(), resources.to_json());
+                    embeds.insert(rel.clone(), resources.to_json());
                 } else {
-                    embeds.insert(rel.as_slice().to_string(), resources[0].to_json());
+                    embeds.insert(rel.clone(), resources[0].to_json());
                 }
             }
 
