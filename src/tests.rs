@@ -166,7 +166,7 @@ fn hal_spec() {
 
 #[test]
 fn order_to_hal() {
-    let order = Order { total: 20.00 as f64, currency: String::from_str("USD"), status: String::from_str("processing") };
+    let order = Order { total: 20.00 as f64, currency: "USD".to_string(), status: "processing".to_string() };
 
     let output = r#"{"_links":{"self":{"href":"https://www.example.com/orders/1"}},"currency":"USD","status":"processing","total":20.0}"#;
     assert_eq!(order.to_hal().to_json().to_string(), output.to_string());

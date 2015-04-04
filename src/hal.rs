@@ -4,12 +4,10 @@ A pure rust library for generating Hal responses.
 
 #![crate_name = "hal"]
 #![crate_type = "lib"]
-#![feature(collections, convert)]
 
 #[warn(non_camel_case_types)]
 
 extern crate rustc_serialize as serialize;
-extern crate collections;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
@@ -151,7 +149,7 @@ pub struct Link {
 
 impl Link {
     pub fn new(href: &str) -> Link {
-        Link { href: String::from_str(href),
+        Link { href: href.to_string(),
         templated: None,
         media_type: None,
         deprecation: None,
@@ -215,37 +213,37 @@ impl Link {
 
     pub fn media_type(self, media_type: &str) -> Link {
         let mut link = self.clone();
-        link.media_type = Some(String::from_str(media_type));
+        link.media_type = Some(media_type.to_string());
         link
     }
 
     pub fn deprecation(self, deprecation: &str) -> Link {
         let mut link = self.clone();
-        link.deprecation = Some(String::from_str(deprecation));
+        link.deprecation = Some(deprecation.to_string());
         link
     }
 
     pub fn name(self, name: &str) -> Link {
         let mut link = self.clone();
-        link.name = Some(String::from_str(name));
+        link.name = Some(name.to_string());
         link
     }
 
     pub fn title(self, title: &str) -> Link {
         let mut link = self.clone();
-        link.title = Some(String::from_str(title));
+        link.title = Some(title.to_string());
         link
     }
 
     pub fn profile(self, profile: &str) -> Link {
         let mut link = self.clone();
-        link.profile = Some(String::from_str(profile));
+        link.profile = Some(profile.to_string());
         link
     }
 
     pub fn hreflang(self, hreflang: &str) -> Link {
         let mut link = self.clone();
-        link.hreflang = Some(String::from_str(hreflang));
+        link.hreflang = Some(hreflang.to_string());
         link
     }
 }
@@ -331,13 +329,13 @@ impl Resource {
 
     pub fn add_state<V>(self, key: &str, value: V) -> Resource where V: ToHalState {
         let mut resource = self.clone();
-        resource.state.insert(String::from_str(key), value.to_hal_state());
+        resource.state.insert(key.to_string(), value.to_hal_state());
         resource
     }
 
     pub fn add_link(self, rel: &str, link: Link) -> Resource {
         let mut resource = self.clone();
-        match resource.links.entry(String::from_str(rel)) {
+        match resource.links.entry(rel.to_string()) {
             Vacant(entry) => {
                 let l = vec![link.clone()];
                 entry.insert(l);
@@ -358,7 +356,7 @@ impl Resource {
 
     pub fn add_resource(self, rel: &str, resource: Resource) -> Resource {
         let mut new_r = self.clone();
-        match new_r.resources.entry(String::from_str(rel)) {
+        match new_r.resources.entry(rel.to_string()) {
             Vacant(entry) => {
                 let r = vec![resource.clone()];
                 entry.insert(r);
