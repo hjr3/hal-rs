@@ -11,4 +11,4 @@ authors = [ "herman@hermanradtke.com" ]
 name = "hal"
 
 [dependencies]
-rustc_serialize = "*"
+rustc-serialize = "*"
