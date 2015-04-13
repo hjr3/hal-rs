@@ -1,8 +1,8 @@
 [package]
 
-name = "hal-rs"
+name = "hal"
 version = "0.0.1"
-description = "A pure rust library for generating Hal responses."
+description = "A pure rust library for generating Hypertext Application Language (Hal) responses."
 license = "MIT"
 authors = [ "herman@hermanradtke.com" ]
 
@@ -11,4 +11,4 @@ authors = [ "herman@hermanradtke.com" ]
 name = "hal"
 
 [dependencies]
-rustc-serialize = "*"
+rustc_serialize = "*"
