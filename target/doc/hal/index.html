@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `hal` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, hal">
+
+    <title>hal - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'hal', ty: 'mod', relpath: '../'};</script>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>hal</a><wbr></span><span class='out-of-band'><a href='stability.html'>[stability]</a> <span id='render-detail'>
+            <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-0' href='../src/hal/lib.rs.html#1-77'>[src]</a></span></h1>
+<div class='docblock'><p>A pure rust library for generating Hal responses.</p>
+
+<p>Example:</p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>hal</span>;
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rustc_serialize</span> <span class='kw'>as</span> <span class='ident'>serialize</span>;
+ 
+<span class='kw'>use</span> <span class='ident'>hal</span>::<span class='ident'>ToHal</span>;
+<span class='kw'>use</span> <span class='ident'>hal</span>::<span class='ident'>link</span>::<span class='ident'>Link</span>;
+<span class='kw'>use</span> <span class='ident'>hal</span>::<span class='ident'>resource</span>::<span class='ident'>Resource</span>;
+<span class='kw'>use</span> <span class='ident'>hal</span>::<span class='ident'>state</span>::<span class='ident'>ToHalState</span>;
+<span class='kw'>use</span> <span class='ident'>serialize</span>::<span class='ident'>json</span>::<span class='ident'>ToJson</span>;
+ 
+<span class='kw'>struct</span> <span class='ident'>Order</span> {
+    <span class='ident'>total</span>: <span class='ident'>f64</span>,
+    <span class='ident'>currency</span>: <span class='ident'>String</span>,
+    <span class='ident'>status</span>: <span class='ident'>String</span>
+}
+ 
+<span class='kw'>impl</span> <span class='ident'>ToHal</span> <span class='kw'>for</span> <span class='ident'>Order</span> {
+    <span class='kw'>fn</span> <span class='ident'>to_hal</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Resource</span> {
+        <span class='ident'>Resource</span>::<span class='ident'>with_self</span>(<span class='string'>&quot;https://www.example.com/orders/1&quot;</span>)
+            .<span class='ident'>add_state</span>(<span class='string'>&quot;total&quot;</span>, <span class='self'>self</span>.<span class='ident'>total</span>)
+            .<span class='ident'>add_state</span>(<span class='string'>&quot;currency&quot;</span>, <span class='self'>self</span>.<span class='ident'>currency</span>)
+            .<span class='ident'>add_state</span>(<span class='string'>&quot;status&quot;</span>, <span class='self'>self</span>.<span class='ident'>status</span>)
+    }
+}
+ 
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>hal</span> <span class='op'>=</span> <span class='ident'>Resource</span>::<span class='ident'>with_self</span>(<span class='string'>&quot;/orders&quot;</span>)
+        .<span class='ident'>add_curie</span>(<span class='string'>&quot;ea&quot;</span>, <span class='string'>&quot;http://example.com/docs/rels/{rel}&quot;</span>)
+        .<span class='ident'>add_link</span>(<span class='string'>&quot;next&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/orders?page=2&quot;</span>))
+        .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:find&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/orders{?id}&quot;</span>).<span class='ident'>templated</span>(<span class='boolval'>true</span>))
+        .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:admin&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/admins/2&quot;</span>).<span class='ident'>title</span>(<span class='string'>&quot;Fred&quot;</span>))
+        .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:admin&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/admins/5&quot;</span>).<span class='ident'>title</span>(<span class='string'>&quot;Kate&quot;</span>))
+        .<span class='ident'>add_state</span>(<span class='string'>&quot;currentlyProcessing&quot;</span>, <span class='number'>14</span> <span class='kw'>as</span> <span class='ident'>i64</span>)
+        .<span class='ident'>add_state</span>(<span class='string'>&quot;shippedToday&quot;</span>, <span class='number'>14</span> <span class='kw'>as</span> <span class='ident'>i64</span>)
+        .<span class='ident'>add_resource</span>(<span class='string'>&quot;ea:order&quot;</span>,
+            <span class='ident'>Resource</span>::<span class='ident'>with_self</span>(<span class='string'>&quot;/orders/123&quot;</span>)
+                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:basket&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/baskets/98712&quot;</span>))
+                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:customer&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/customers/7809&quot;</span>))
+                .<span class='ident'>add_state</span>(<span class='string'>&quot;total&quot;</span>, (<span class='number'>30.00</span> <span class='kw'>as</span> <span class='ident'>f64</span>))
+                .<span class='ident'>add_state</span>(<span class='string'>&quot;currency&quot;</span>, <span class='string'>&quot;USD&quot;</span>)
+                .<span class='ident'>add_state</span>(<span class='string'>&quot;status&quot;</span>, <span class='string'>&quot;shipped&quot;</span>)
+        )
+        .<span class='ident'>add_resource</span>(<span class='string'>&quot;ea:order&quot;</span>,
+            <span class='ident'>Resource</span>::<span class='ident'>with_self</span>(<span class='string'>&quot;/orders/124&quot;</span>)
+                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:basket&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/baskets/97213&quot;</span>))
+                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:customer&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/customers/12369&quot;</span>))
+                .<span class='ident'>add_state</span>(<span class='string'>&quot;total&quot;</span>, (<span class='number'>20.00</span> <span class='kw'>as</span> <span class='ident'>f64</span>))
+                .<span class='ident'>add_state</span>(<span class='string'>&quot;currency&quot;</span>, <span class='string'>&quot;USD&quot;</span>)
+                .<span class='ident'>add_state</span>(<span class='string'>&quot;status&quot;</span>, <span class='string'>&quot;processing&quot;</span>)
+        );
+ 
+    <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;Creating Hal using a DSL: {}&quot;</span>, <span class='ident'>hal</span>.<span class='ident'>to_json</span>().<span class='ident'>to_string</span>());
+ 
+    <span class='kw'>let</span> <span class='ident'>order</span> <span class='op'>=</span> <span class='ident'>Order</span> { <span class='ident'>total</span>: <span class='number'>20.00</span> <span class='kw'>as</span> <span class='ident'>f64</span>, 
+                        <span class='ident'>currency</span>: <span class='string'>&quot;USD&quot;</span>.<span class='ident'>to_string</span>(), 
+                        <span class='ident'>status</span>: <span class='string'>&quot;processing&quot;</span>.<span class='ident'>to_string</span>() };
+ 
+    <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;Creating Hal using to_hal(): {}&quot;</span>, <span class='ident'>order</span>.<span class='ident'>to_hal</span>().<span class='ident'>to_json</span>().<span class='ident'>to_string</span>());
+}
+</pre>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                    <tr>
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='mod' href='link/index.html'
+                               title='hal::link'>link</a></td>
+                        <td class='docblock short'></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='mod' href='resource/index.html'
+                               title='hal::resource'>resource</a></td>
+                        <td class='docblock short'></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='mod' href='state/index.html'
+                               title='hal::state'>state</a></td>
+                        <td class='docblock short'></td>
+                    </tr>
+                </table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                    <tr>
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='trait' href='trait.ToHal.html'
+                               title='hal::ToHal'>ToHal</a></td>
+                        <td class='docblock short'></td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "hal";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>

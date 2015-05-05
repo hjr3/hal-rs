@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["HalState","Represents a Hal data value"]],"trait":[["ToHalState","A trait for converting values to Hal data"]],"type":[["HalList","A vector of HalState enums to be serialized into json"],["HalObject","A map of strings and HalState enums to be serialized into json"]]});
