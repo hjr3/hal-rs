@@ -18,7 +18,7 @@ use serialize::{json};
 #[cfg(test)]
 mod tests;
 
-/// Represents Hal data value
+/// Represents a Hal data value
 #[derive(Clone, PartialEq, Debug)]
 pub enum HalState {
     I64(i64),
@@ -27,11 +27,14 @@ pub enum HalState {
     HalString(String),
     Boolean(bool),
     Null,
-    HalList(List),
+    List(HalList),
     Object(HalObject),
 }
 
-pub type List = Vec<HalState>;
+/// A vector of HalState enums to be serialized into json
+pub type HalList = Vec<HalState>;
+
+/// A map of strings and HalState enums to be serialized into json
 pub type HalObject = BTreeMap<String, HalState>;
 
 /// A trait for converting values to Hal data
@@ -73,7 +76,7 @@ impl ToHalState for &'static str {
 }
 
 impl<T:ToHalState> ToHalState for Vec<T> {
-    fn to_hal_state(&self) -> HalState { HalState::HalList(self.iter().map(|elt| elt.to_hal_state()).collect()) }
+    fn to_hal_state(&self) -> HalState { HalState::List(self.iter().map(|elt| elt.to_hal_state()).collect()) }
 }
 
 impl<T:ToHalState> ToHalState for BTreeMap<String, T> {
@@ -129,12 +132,13 @@ impl ToJson for HalState {
             HalState::HalString(ref v) => v.to_json(),
             HalState::Boolean(v) => v.to_json(),
             HalState::Null => ().to_json(),
-            HalState::HalList(ref v) => v.to_json(),
+            HalState::List(ref v) => v.to_json(),
             HalState::Object(ref v) => v.to_json(),
         }
     }
 }
 
+/// A Hal Link object
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Link {
     href: String,
@@ -160,6 +164,7 @@ impl Link {
         }
     }
 
+    /// Convert a json object into a Link
     pub fn from_json(json: &Json) -> Link {
         let ref url = json["href".as_ref()];
 
