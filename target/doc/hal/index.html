@@ -50,60 +50,61 @@
 <pre id='rust-example-rendered' class='rust '>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>hal</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rustc_serialize</span> <span class='kw'>as</span> <span class='ident'>serialize</span>;
- 
+  
 <span class='kw'>use</span> <span class='ident'>hal</span>::<span class='ident'>ToHal</span>;
 <span class='kw'>use</span> <span class='ident'>hal</span>::<span class='ident'>link</span>::<span class='ident'>Link</span>;
 <span class='kw'>use</span> <span class='ident'>hal</span>::<span class='ident'>resource</span>::<span class='ident'>Resource</span>;
 <span class='kw'>use</span> <span class='ident'>hal</span>::<span class='ident'>state</span>::<span class='ident'>ToHalState</span>;
 <span class='kw'>use</span> <span class='ident'>serialize</span>::<span class='ident'>json</span>::<span class='ident'>ToJson</span>;
- 
+  
 <span class='kw'>struct</span> <span class='ident'>Order</span> {
     <span class='ident'>total</span>: <span class='ident'>f64</span>,
     <span class='ident'>currency</span>: <span class='ident'>String</span>,
     <span class='ident'>status</span>: <span class='ident'>String</span>
 }
- 
+  
 <span class='kw'>impl</span> <span class='ident'>ToHal</span> <span class='kw'>for</span> <span class='ident'>Order</span> {
     <span class='kw'>fn</span> <span class='ident'>to_hal</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Resource</span> {
-        <span class='ident'>Resource</span>::<span class='ident'>with_self</span>(<span class='string'>&quot;https://www.example.com/orders/1&quot;</span>)
-            .<span class='ident'>add_state</span>(<span class='string'>&quot;total&quot;</span>, <span class='self'>self</span>.<span class='ident'>total</span>)
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>resource</span> <span class='op'>=</span> <span class='ident'>Resource</span>::<span class='ident'>with_self</span>(<span class='string'>&quot;https://www.example.com/orders/1&quot;</span>);
+        <span class='ident'>resource</span>.<span class='ident'>add_state</span>(<span class='string'>&quot;total&quot;</span>, <span class='self'>self</span>.<span class='ident'>total</span>)
             .<span class='ident'>add_state</span>(<span class='string'>&quot;currency&quot;</span>, <span class='self'>self</span>.<span class='ident'>currency</span>)
-            .<span class='ident'>add_state</span>(<span class='string'>&quot;status&quot;</span>, <span class='self'>self</span>.<span class='ident'>status</span>)
+            .<span class='ident'>add_state</span>(<span class='string'>&quot;status&quot;</span>, <span class='self'>self</span>.<span class='ident'>status</span>);
+        <span class='ident'>resource</span>
     }
 }
- 
+  
 <span class='kw'>fn</span> <span class='ident'>main</span>() {
-    <span class='kw'>let</span> <span class='ident'>hal</span> <span class='op'>=</span> <span class='ident'>Resource</span>::<span class='ident'>with_self</span>(<span class='string'>&quot;/orders&quot;</span>)
-        .<span class='ident'>add_curie</span>(<span class='string'>&quot;ea&quot;</span>, <span class='string'>&quot;http://example.com/docs/rels/{rel}&quot;</span>)
-        .<span class='ident'>add_link</span>(<span class='string'>&quot;next&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/orders?page=2&quot;</span>))
-        .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:find&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/orders{?id}&quot;</span>).<span class='ident'>templated</span>(<span class='boolval'>true</span>))
-        .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:admin&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/admins/2&quot;</span>).<span class='ident'>title</span>(<span class='string'>&quot;Fred&quot;</span>))
-        .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:admin&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/admins/5&quot;</span>).<span class='ident'>title</span>(<span class='string'>&quot;Kate&quot;</span>))
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>hal</span> <span class='op'>=</span> <span class='ident'>Resource</span>::<span class='ident'>with_self</span>(<span class='string'>&quot;/orders&quot;</span>);
+    <span class='ident'>hal</span>.<span class='ident'>add_curie</span>(<span class='string'>&quot;ea&quot;</span>, <span class='string'>&quot;http://example.com/docs/rels/{rel}&quot;</span>)
+        .<span class='ident'>add_link</span>(<span class='string'>&quot;next&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/orders?page=2&quot;</span>))
+        .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:find&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/orders{?id}&quot;</span>).<span class='ident'>templated</span>(<span class='boolval'>true</span>))
+        .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:admin&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/admins/2&quot;</span>).<span class='ident'>title</span>(<span class='string'>&quot;Fred&quot;</span>))
+        .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:admin&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/admins/5&quot;</span>).<span class='ident'>title</span>(<span class='string'>&quot;Kate&quot;</span>))
         .<span class='ident'>add_state</span>(<span class='string'>&quot;currentlyProcessing&quot;</span>, <span class='number'>14</span> <span class='kw'>as</span> <span class='ident'>i64</span>)
         .<span class='ident'>add_state</span>(<span class='string'>&quot;shippedToday&quot;</span>, <span class='number'>14</span> <span class='kw'>as</span> <span class='ident'>i64</span>)
         .<span class='ident'>add_resource</span>(<span class='string'>&quot;ea:order&quot;</span>,
             <span class='ident'>Resource</span>::<span class='ident'>with_self</span>(<span class='string'>&quot;/orders/123&quot;</span>)
-                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:basket&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/baskets/98712&quot;</span>))
-                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:customer&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/customers/7809&quot;</span>))
+                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:basket&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/baskets/98712&quot;</span>))
+                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:customer&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/customers/7809&quot;</span>))
                 .<span class='ident'>add_state</span>(<span class='string'>&quot;total&quot;</span>, (<span class='number'>30.00</span> <span class='kw'>as</span> <span class='ident'>f64</span>))
                 .<span class='ident'>add_state</span>(<span class='string'>&quot;currency&quot;</span>, <span class='string'>&quot;USD&quot;</span>)
                 .<span class='ident'>add_state</span>(<span class='string'>&quot;status&quot;</span>, <span class='string'>&quot;shipped&quot;</span>)
         )
         .<span class='ident'>add_resource</span>(<span class='string'>&quot;ea:order&quot;</span>,
             <span class='ident'>Resource</span>::<span class='ident'>with_self</span>(<span class='string'>&quot;/orders/124&quot;</span>)
-                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:basket&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/baskets/97213&quot;</span>))
-                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:customer&quot;</span>, <span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/customers/12369&quot;</span>))
+                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:basket&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/baskets/97213&quot;</span>))
+                .<span class='ident'>add_link</span>(<span class='string'>&quot;ea:customer&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>Link</span>::<span class='ident'>new</span>(<span class='string'>&quot;/customers/12369&quot;</span>))
                 .<span class='ident'>add_state</span>(<span class='string'>&quot;total&quot;</span>, (<span class='number'>20.00</span> <span class='kw'>as</span> <span class='ident'>f64</span>))
                 .<span class='ident'>add_state</span>(<span class='string'>&quot;currency&quot;</span>, <span class='string'>&quot;USD&quot;</span>)
                 .<span class='ident'>add_state</span>(<span class='string'>&quot;status&quot;</span>, <span class='string'>&quot;processing&quot;</span>)
         );
- 
+  
     <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;Creating Hal using a DSL: {}&quot;</span>, <span class='ident'>hal</span>.<span class='ident'>to_json</span>().<span class='ident'>to_string</span>());
- 
+  
     <span class='kw'>let</span> <span class='ident'>order</span> <span class='op'>=</span> <span class='ident'>Order</span> { <span class='ident'>total</span>: <span class='number'>20.00</span> <span class='kw'>as</span> <span class='ident'>f64</span>, 
                         <span class='ident'>currency</span>: <span class='string'>&quot;USD&quot;</span>.<span class='ident'>to_string</span>(), 
                         <span class='ident'>status</span>: <span class='string'>&quot;processing&quot;</span>.<span class='ident'>to_string</span>() };
- 
+  
     <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;Creating Hal using to_hal(): {}&quot;</span>, <span class='ident'>order</span>.<span class='ident'>to_hal</span>().<span class='ident'>to_json</span>().<span class='ident'>to_string</span>());
 }
 </pre>
