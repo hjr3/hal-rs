@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use std::collections::hash_map::Entry::{Occupied, Vacant};
+use std::collections::btree_map::Entry::{Occupied, Vacant};
 use std::collections::BTreeMap;
 use serialize::json::{ToJson, Json};
 use serialize::{json};
@@ -7,22 +6,25 @@ use serialize::{json};
 use link::Link;
 use state::{HalState, ToHalState};
 
-// todo: maybe just convert these to BTreeMap? would save a lot of code
 #[derive(Clone, PartialEq, Debug)]
 pub struct Resource {
-    state: HashMap<String, HalState>,
-    links: HashMap<String, Vec<Link>>,
-    resources: HashMap<String, Vec<Resource>>
+    state: BTreeMap<String, HalState>,
+    links: BTreeMap<String, Vec<Link>>,
+    resources: BTreeMap<String, Vec<Resource>>
 }
 
 impl Resource {
     pub fn new() -> Resource {
-        Resource { state: HashMap::new(), links: HashMap::new(), resources: HashMap::new() }
+        Resource { state: BTreeMap::new(), links: BTreeMap::new(), resources: BTreeMap::new() }
     }
 
     pub fn with_self<S>(uri: S) -> Resource
         where S: Into<String> {
-        Resource::new().add_link("self", Link::new(uri))
+
+        let link = Link::new(uri);
+        let mut resource = Resource::new();
+        resource.add_link("self", &link);
+        resource
     }
 
     /// This feature is still experimental.
@@ -36,13 +38,14 @@ impl Resource {
                     let links = value.as_object().unwrap();
 
                     for (link_key, link_object) in links.iter() {
-                        resource = resource.add_link(
+                        let link = Link::from_json(&link_object.to_json());
+                        resource.add_link(
                             link_key.as_ref(),
-                            Link::from_json(&link_object.to_json())
+                            &link
                         );
                     }
                 } else {
-                    resource = resource.add_state(key.as_ref(), value.clone());
+                    resource.add_state(key.as_ref(), value.clone());
                 }
             }
         }
@@ -50,17 +53,15 @@ impl Resource {
         resource
     }
 
-    pub fn add_state<S, V>(self, key: S, value: V) -> Resource 
+    pub fn add_state<S, V>(&mut self, key: S, value: V) -> &mut Resource 
         where V: ToHalState, S: Into<String> {
-        let mut resource = self.clone();
-        resource.state.insert(key.into(), value.to_hal_state());
-        resource
+        self.state.insert(key.into(), value.to_hal_state());
+        self
     }
 
-    pub fn add_link<S>(self, rel: S, link: Link) -> Resource
+    pub fn add_link<S>(&mut self, rel: S, link: &Link) -> &mut Resource
         where S: Into<String> {
-        let mut resource = self.clone();
-        match resource.links.entry(rel.into()) {
+        match self.links.entry(rel.into()) {
             Vacant(entry) => {
                 let l = vec![link.clone()];
                 entry.insert(l);
@@ -71,19 +72,19 @@ impl Resource {
             }
         };
 
-        resource
+        self
     }
 
-    pub fn add_curie<S>(self, name: S, href: S) -> Resource
+    pub fn add_curie<S>(&mut self, name: S, href: S) -> &mut Resource
         where S: Into<String> {
-        let link = Link::new(href).templated(true).name(name);
-        self.add_link("curies", link)
+        let mut link = Link::new(href);
+        link.templated(true).name(name);
+        self.add_link("curies", &link)
     }
 
-    pub fn add_resource<S>(self, rel: S, resource: Resource) -> Resource
+    pub fn add_resource<S>(&mut self, rel: S, resource: &Resource) -> &mut Resource
         where S: Into<String> {
-        let mut new_r = self.clone();
-        match new_r.resources.entry(rel.into()) {
+        match self.resources.entry(rel.into()) {
             Vacant(entry) => {
                 let r = vec![resource.clone()];
                 entry.insert(r);
@@ -94,7 +95,7 @@ impl Resource {
             }
         }
 
-        new_r
+        self
     }
 }
 
@@ -102,7 +103,6 @@ impl ToJson for Resource {
     fn to_json(&self) -> json::Json {
         let mut hal = BTreeMap::new();
         let mut link_rels = BTreeMap::new();
-        let mut embeds = BTreeMap::new();
 
         if self.links.len() > 0 {
             for (rel, links) in self.links.iter() {
@@ -123,15 +123,7 @@ impl ToJson for Resource {
         }
 
         if self.resources.len() > 0 {
-            for (rel, resources) in self.resources.iter() {
-                if resources.len() > 1 {
-                    embeds.insert(rel.clone(), resources.to_json());
-                } else {
-                    embeds.insert(rel.clone(), resources[0].to_json());
-                }
-            }
-
-            hal.insert("_embedded".to_string(), embeds.to_json());
+            hal.insert("_embedded".to_string(), self.resources.to_json());
         }
 
         json::Json::Object(hal)

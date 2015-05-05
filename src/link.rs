@@ -37,88 +37,81 @@ impl Link {
         // todo: make this a macro
         if json.search("templated").is_some() {
             let value = json.search("templated").unwrap();
-            link = link.templated(value.as_boolean().unwrap());
+            link.templated(value.as_boolean().unwrap());
         } 
 
         if json.search("type").is_some() {
             let value = json.search("type").unwrap();
-            link = link.media_type(value.as_string().unwrap());
+            link.media_type(value.as_string().unwrap());
         } 
 
         if json.search("deprecation").is_some() {
             let value = json.search("deprecation").unwrap();
-            link = link.deprecation(value.as_string().unwrap());
+            link.deprecation(value.as_string().unwrap());
         } 
 
         if json.search("name").is_some() {
             let value = json.search("name").unwrap();
-            link = link.name(value.as_string().unwrap());
+            link.name(value.as_string().unwrap());
         } 
 
         if json.search("title").is_some() {
             let value = json.search("title").unwrap();
-            link = link.title(value.as_string().unwrap());
+            link.title(value.as_string().unwrap());
         } 
 
         if json.search("profile").is_some() {
             let value = json.search("profile").unwrap();
-            link = link.profile(value.as_string().unwrap());
+            link.profile(value.as_string().unwrap());
         } 
 
         if json.search("hreflang").is_some() {
             let value = json.search("hreflang").unwrap();
-            link = link.hreflang(value.as_string().unwrap());
+            link.hreflang(value.as_string().unwrap());
         } 
 
         link
     }
 
-    pub fn templated(self, is_template: bool) -> Link {
-        let mut link = self.clone();
-        link.templated = Some(is_template);
-        link
+    pub fn templated(&mut self, is_template: bool) -> &mut Link {
+        self.templated = Some(is_template);
+        self
     }
 
-    pub fn media_type<S>(self, media_type: S) -> Link
+    pub fn media_type<S>(&mut self, media_type: S) -> &mut Link
         where S: Into<String> {
-        let mut link = self.clone();
-        link.media_type = Some(media_type.into());
-        link
+        self.media_type = Some(media_type.into());
+        self
     }
 
-    pub fn deprecation<S>(self, deprecation: S) -> Link
+    pub fn deprecation<S>(&mut self, deprecation: S) -> &mut Link
         where S: Into<String> {
-        let mut link = self.clone();
-        link.deprecation = Some(deprecation.into());
-        link
+        self.deprecation = Some(deprecation.into());
+        self
     }
 
-    pub fn name<S>(self, name: S) -> Link
+    pub fn name<S>(&mut self, name: S) -> &mut Link
         where S: Into<String> {
-        let mut link = self.clone();
-        link.name = Some(name.into());
-        link
+        self.name = Some(name.into());
+        self
     }
 
-    pub fn title<S>(self, title: S) -> Link
+    pub fn title<S>(&mut self, title: S) -> &mut Link
         where S: Into<String> {
-        let mut link = self.clone();
-        link.title = Some(title.into());
-        link
+        self.title = Some(title.into());
+        self
     }
 
-    pub fn profile<S>(self, profile: S) -> Link
+    pub fn profile<S>(&mut self, profile: S) -> &mut Link
         where S: Into<String> {
-        let mut link = self.clone();
-        link.profile = Some(profile.into());
-        link
+        self.profile = Some(profile.into());
+        self
     }
 
-    pub fn hreflang<S>(self, hreflang: S) -> Link
+    pub fn hreflang<S>(&mut self, hreflang: S) -> &mut Link
         where S: Into<String> {
-        let mut link = self.clone();
-        link.hreflang = Some(hreflang.into());
-        link
+        self.hreflang = Some(hreflang.into());
+        self
     }
 }
 

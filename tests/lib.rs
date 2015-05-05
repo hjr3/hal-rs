@@ -18,10 +18,11 @@ struct Order {
 
 impl ToHal for Order {
     fn to_hal(self) -> Resource {
-        Resource::with_self("https://www.example.com/orders/1")
-            .add_state("total", self.total)
+        let mut hal = Resource::with_self("https://www.example.com/orders/1");
+        hal.add_state("total", self.total)
             .add_state("currency", self.currency)
-            .add_state("status", self.status)
+            .add_state("status", self.status);
+        hal
     }
 }
 
@@ -39,8 +40,8 @@ fn link_from_json() {
 
     let json = Json::from_str(json_str).unwrap();
 
-    let link = Link::new("https://www.example.com")
-        .templated(true)
+    let mut link = Link::new("https://www.example.com");
+    link.templated(true)
         .deprecation("https://www.example.com/newer")
         .media_type("text/html")
         .name("example")
@@ -53,8 +54,8 @@ fn link_from_json() {
 
 #[test]
 fn link_attributes() {
-    let link = Link::new("https://www.example.com")
-        .templated(true)
+    let mut link = Link::new("https://www.example.com");
+    link.templated(true)
         .deprecation("https://www.example.com/newer")
         .media_type("text/html")
         .name("example")
@@ -68,8 +69,8 @@ fn link_attributes() {
 
 #[test]
 fn hal_add_resource() {
-    let hal = Resource::new();
-    hal.add_resource("orders", Resource::new());
+    let mut hal = Resource::new();
+    hal.add_resource("orders", &Resource::new());
 }
 
 #[test]
@@ -90,8 +91,8 @@ fn hal_with_self() {
 
 #[test]
 fn hal_from_json() {
-    let hal = Resource::with_self("https://www.example.com")
-        .add_state("currentlyProcessing", 14i64)
+    let mut hal = Resource::with_self("https://www.example.com");
+    hal.add_state("currentlyProcessing", 14i64)
         .add_state("currency", "USD")
         .add_state("active", true)
         .add_state("errors", ());
@@ -102,16 +103,16 @@ fn hal_from_json() {
 #[test]
 fn hal_with_self_and_link() {
     let output = r#"{"_links":{"orders":{"href":"https://www.example.com/orders"},"self":{"href":"https://www.example.com"}}}"#;
-    let hal = Resource::with_self("https://www.example.com")
-        .add_link("orders", Link::new("https://www.example.com/orders"));
+    let mut hal = Resource::with_self("https://www.example.com");
+    hal.add_link("orders", &Link::new("https://www.example.com/orders"));
     assert_eq!(hal.to_json().to_string(), output);
 }
 
 #[test]
 fn hal_with_self_and_two_links() {
-    let hal = Resource::with_self("https://www.example.com")
-        .add_link("orders", Link::new("https://www.example.com/orders/1"))
-        .add_link("orders", Link::new("https://www.example.com/orders/2"));
+    let mut hal = Resource::with_self("https://www.example.com");
+    hal.add_link("orders", &Link::new("https://www.example.com/orders/1"))
+        .add_link("orders", &Link::new("https://www.example.com/orders/2"));
 
     let output = r#"{"_links":{"orders":[{"href":"https://www.example.com/orders/1"},{"href":"https://www.example.com/orders/2"}],"self":{"href":"https://www.example.com"}}}"#;
     assert_eq!(hal.to_json().to_string(), output);
@@ -119,8 +120,8 @@ fn hal_with_self_and_two_links() {
 
 #[test]
 fn hal_and_add_curie() {
-    let hal = Resource::with_self("https://www.example.com")
-        .add_curie("ea", "http://example.com/docs/rels/{rel}");
+    let mut hal = Resource::with_self("https://www.example.com");
+    hal.add_curie("ea", "http://example.com/docs/rels/{rel}");
 
 
     let output = r#"{"_links":{"curies":[{"href":"http://example.com/docs/rels/{rel}","name":"ea","templated":true}],"self":{"href":"https://www.example.com"}}}"#;
@@ -129,8 +130,8 @@ fn hal_and_add_curie() {
 
 #[test]
 fn hal_add_state() {
-    let hal = Resource::new()
-        .add_state("currentlyProcessing", 14i64)
+    let mut hal = Resource::new();
+    hal.add_state("currentlyProcessing", 14 as i64)
         .add_state("currency", "USD")
         .add_state("active", true)
         .add_state("errors", ());
@@ -141,27 +142,27 @@ fn hal_add_state() {
 
 #[test]
 fn hal_spec() {
-    let hal = Resource::with_self("/orders")
-        .add_curie("ea", "http://example.com/docs/rels/{rel}")
-        .add_link("next", Link::new("/orders?page=2"))
-        .add_link("ea:find", Link::new("/orders{?id}").templated(true))
-        .add_link("ea:admin", Link::new("/admins/2").title("Fred"))
-        .add_link("ea:admin", Link::new("/admins/5").title("Kate"))
+    let mut hal = Resource::with_self("/orders");
+    hal.add_curie("ea", "http://example.com/docs/rels/{rel}")
+        .add_link("next", &Link::new("/orders?page=2"))
+        .add_link("ea:find", &Link::new("/orders{?id}").templated(true))
+        .add_link("ea:admin", &Link::new("/admins/2").title("Fred"))
+        .add_link("ea:admin", &Link::new("/admins/5").title("Kate"))
         .add_state("currentlyProcessing", 14i64)
         .add_state("shippedToday", 14i64)
         .add_resource("ea:order",
             Resource::with_self("/orders/123")
-                .add_link("ea:basket", Link::new("/baskets/98712"))
-                .add_link("ea:customer", Link::new("/customers/7809"))
-                .add_state("total", (30.00 as f64)) // fix precision
+                .add_link("ea:basket", &Link::new("/baskets/98712"))
+                .add_link("ea:customer", &Link::new("/customers/7809"))
+                .add_state("total", (30.00 as f64))
                 .add_state("currency", "USD")
                 .add_state("status", "shipped")
         )
         .add_resource("ea:order",
             Resource::with_self("/orders/124")
-                .add_link("ea:basket", Link::new("/baskets/97213"))
-                .add_link("ea:customer", Link::new("/customers/12369"))
-                .add_state("total", (20.00 as f64)) // fix precision
+                .add_link("ea:basket", &Link::new("/baskets/97213"))
+                .add_link("ea:customer", &Link::new("/customers/12369"))
+                .add_state("total", (20.00 as f64))
                 .add_state("currency", "USD")
                 .add_state("status", "processing")
         );
@@ -182,8 +183,8 @@ fn order_to_hal() {
 fn list_to_hal_state() {
     let friends = vec!("Mary", "Timmy", "Sally", "Wally");
 
-    let hal = Resource::with_self("/user/1")
-        .add_state("friends", friends);
+    let mut hal = Resource::with_self("/user/1");
+    hal.add_state("friends", friends);
 
     let output = r#"{"_links":{"self":{"href":"/user/1"}},"friends":["Mary","Timmy","Sally","Wally"]}"#;
     assert_eq!(hal.to_json().to_string(), output.to_string());
@@ -195,8 +196,8 @@ fn object_to_hal_state() {
     fullname.insert("given".to_string(), "John");
     fullname.insert("family".to_string(), "Doe");
 
-    let hal = Resource::with_self("/user/1")
-        .add_state("fullname", fullname);
+    let mut hal = Resource::with_self("/user/1");
+    hal.add_state("fullname", fullname);
 
     let output = r#"{"_links":{"self":{"href":"/user/1"}},"fullname":{"family":"Doe","given":"John"}}"#;
     assert_eq!(hal.to_json().to_string(), output.to_string());
@@ -205,8 +206,8 @@ fn object_to_hal_state() {
     fullname.insert("given".to_string(), "John");
     fullname.insert("family".to_string(), "Doe");
 
-    let hal = Resource::with_self("/user/1")
-        .add_state("fullname", fullname);
+    let mut hal = Resource::with_self("/user/1");
+    hal.add_state("fullname", fullname);
 
     assert_eq!(hal.to_json().to_string(), output.to_string());
 }
