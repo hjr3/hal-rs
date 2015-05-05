@@ -2,11 +2,6 @@
 A pure rust library for generating Hal responses.
  */
 
-#![crate_name = "hal"]
-#![crate_type = "lib"]
-
-#[warn(non_camel_case_types)]
-
 extern crate rustc_serialize as serialize;
 
 use std::collections::HashMap;
@@ -14,9 +9,6 @@ use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::BTreeMap;
 use serialize::json::{ToJson, Json};
 use serialize::{json};
-
-#[cfg(test)]
-mod tests;
 
 /// Represents a Hal data value
 #[derive(Clone, PartialEq, Debug)]

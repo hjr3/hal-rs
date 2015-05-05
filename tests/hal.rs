@@ -1,5 +1,8 @@
-use super::{Link, Resource, ToHal, ToHalState};
-use super::HalState::{I64, Null};
+extern crate hal;
+extern crate rustc_serialize as serialize;
+
+use hal::{Link, Resource, ToHal, ToHalState};
+use hal::HalState::{I64, Null};
 use serialize::json::Json;
 use serialize::json::ToJson;
 use std::collections::{HashMap, BTreeMap};
