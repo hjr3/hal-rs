@@ -20,7 +20,8 @@ impl Resource {
         Resource { state: HashMap::new(), links: HashMap::new(), resources: HashMap::new() }
     }
 
-    pub fn with_self(uri: &str) -> Resource {
+    pub fn with_self<S>(uri: S) -> Resource
+        where S: Into<String> {
         Resource::new().add_link("self", Link::new(uri))
     }
 
@@ -49,15 +50,17 @@ impl Resource {
         resource
     }
 
-    pub fn add_state<V>(self, key: &str, value: V) -> Resource where V: ToHalState {
+    pub fn add_state<S, V>(self, key: S, value: V) -> Resource 
+        where V: ToHalState, S: Into<String> {
         let mut resource = self.clone();
-        resource.state.insert(key.to_string(), value.to_hal_state());
+        resource.state.insert(key.into(), value.to_hal_state());
         resource
     }
 
-    pub fn add_link(self, rel: &str, link: Link) -> Resource {
+    pub fn add_link<S>(self, rel: S, link: Link) -> Resource
+        where S: Into<String> {
         let mut resource = self.clone();
-        match resource.links.entry(rel.to_string()) {
+        match resource.links.entry(rel.into()) {
             Vacant(entry) => {
                 let l = vec![link.clone()];
                 entry.insert(l);
@@ -71,14 +74,16 @@ impl Resource {
         resource
     }
 
-    pub fn add_curie(self, name: &str, href: &str) -> Resource {
+    pub fn add_curie<S>(self, name: S, href: S) -> Resource
+        where S: Into<String> {
         let link = Link::new(href).templated(true).name(name);
         self.add_link("curies", link)
     }
 
-    pub fn add_resource(self, rel: &str, resource: Resource) -> Resource {
+    pub fn add_resource<S>(self, rel: S, resource: Resource) -> Resource
+        where S: Into<String> {
         let mut new_r = self.clone();
-        match new_r.resources.entry(rel.to_string()) {
+        match new_r.resources.entry(rel.into()) {
             Vacant(entry) => {
                 let r = vec![resource.clone()];
                 entry.insert(r);

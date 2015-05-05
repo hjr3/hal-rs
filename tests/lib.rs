@@ -30,7 +30,7 @@ fn link_new() {
     let link = Link::new("https://www.example.com");
 
     let output = r#"{"href":"https://www.example.com"}"#;
-    assert_eq!(link.to_json().to_string(), output.to_string());
+    assert_eq!(link.to_json().to_string(), output);
 }
 
 #[test]
@@ -63,7 +63,7 @@ fn link_attributes() {
         .hreflang("en");
 
     let output = r#"{"deprecation":"https://www.example.com/newer","href":"https://www.example.com","hreflang":"en","name":"example","profile":"http://tools.ietf.org/html/draft-wilde-profile-link-04","templated":true,"title":"An example link","type":"text/html"}"#;
-    assert_eq!(link.to_json().to_string(), output.to_string());
+    assert_eq!(link.to_json().to_string(), output);
 }
 
 #[test]
@@ -77,7 +77,7 @@ fn hal_new() {
     let hal = Resource::new();
 
     let output = r#"{}"#;
-    assert_eq!(hal.to_json().to_string(), output.to_string());
+    assert_eq!(hal.to_json().to_string(), output);
 }
 
 #[test]
@@ -85,7 +85,7 @@ fn hal_with_self() {
     let hal = Resource::with_self("https://www.example.com");
 
     let output = r#"{"_links":{"self":{"href":"https://www.example.com"}}}"#;
-    assert_eq!(hal.to_json().to_string(), output.to_string());
+    assert_eq!(hal.to_json().to_string(), output);
 }
 
 #[test]
@@ -104,7 +104,7 @@ fn hal_with_self_and_link() {
     let output = r#"{"_links":{"orders":{"href":"https://www.example.com/orders"},"self":{"href":"https://www.example.com"}}}"#;
     let hal = Resource::with_self("https://www.example.com")
         .add_link("orders", Link::new("https://www.example.com/orders"));
-    assert_eq!(hal.to_json().to_string(), output.to_string());
+    assert_eq!(hal.to_json().to_string(), output);
 }
 
 #[test]
@@ -114,7 +114,7 @@ fn hal_with_self_and_two_links() {
         .add_link("orders", Link::new("https://www.example.com/orders/2"));
 
     let output = r#"{"_links":{"orders":[{"href":"https://www.example.com/orders/1"},{"href":"https://www.example.com/orders/2"}],"self":{"href":"https://www.example.com"}}}"#;
-    assert_eq!(hal.to_json().to_string(), output.to_string());
+    assert_eq!(hal.to_json().to_string(), output);
 }
 
 #[test]
@@ -124,7 +124,7 @@ fn hal_and_add_curie() {
 
 
     let output = r#"{"_links":{"curies":[{"href":"http://example.com/docs/rels/{rel}","name":"ea","templated":true}],"self":{"href":"https://www.example.com"}}}"#;
-    assert_eq!(hal.to_json().to_string(), output.to_string());
+    assert_eq!(hal.to_json().to_string(), output);
 }
 
 #[test]
@@ -136,7 +136,7 @@ fn hal_add_state() {
         .add_state("errors", ());
 
     let output = r#"{"active":true,"currency":"USD","currentlyProcessing":14,"errors":null}"#;
-    assert_eq!(hal.to_json().to_string(), output.to_string());
+    assert_eq!(hal.to_json().to_string(), output);
 }
 
 #[test]
@@ -167,7 +167,7 @@ fn hal_spec() {
         );
 
     let output = r#"{"_embedded":{"ea:order":[{"_links":{"ea:basket":{"href":"/baskets/98712"},"ea:customer":{"href":"/customers/7809"},"self":{"href":"/orders/123"}},"currency":"USD","status":"shipped","total":30.0},{"_links":{"ea:basket":{"href":"/baskets/97213"},"ea:customer":{"href":"/customers/12369"},"self":{"href":"/orders/124"}},"currency":"USD","status":"processing","total":20.0}]},"_links":{"curies":[{"href":"http://example.com/docs/rels/{rel}","name":"ea","templated":true}],"ea:admin":[{"href":"/admins/2","title":"Fred"},{"href":"/admins/5","title":"Kate"}],"ea:find":{"href":"/orders{?id}","templated":true},"next":{"href":"/orders?page=2"},"self":{"href":"/orders"}},"currentlyProcessing":14,"shippedToday":14}"#;
-    assert_eq!(hal.to_json().to_string(), output.to_string());
+    assert_eq!(hal.to_json().to_string(), output);
 }
 
 #[test]
@@ -175,7 +175,7 @@ fn order_to_hal() {
     let order = Order { total: 20.00 as f64, currency: "USD".to_string(), status: "processing".to_string() };
 
     let output = r#"{"_links":{"self":{"href":"https://www.example.com/orders/1"}},"currency":"USD","status":"processing","total":20.0}"#;
-    assert_eq!(order.to_hal().to_json().to_string(), output.to_string());
+    assert_eq!(order.to_hal().to_json().to_string(), output);
 }
 
 #[test]

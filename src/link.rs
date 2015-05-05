@@ -15,8 +15,8 @@ pub struct Link {
 }
 
 impl Link {
-    pub fn new(href: &str) -> Link {
-        Link { href: href.to_string(),
+    pub fn new<S: Into<String>>(href: S) -> Link {
+        Link { href: href.into(),
         templated: None,
         media_type: None,
         deprecation: None,
@@ -79,39 +79,45 @@ impl Link {
         link
     }
 
-    pub fn media_type(self, media_type: &str) -> Link {
+    pub fn media_type<S>(self, media_type: S) -> Link
+        where S: Into<String> {
         let mut link = self.clone();
-        link.media_type = Some(media_type.to_string());
+        link.media_type = Some(media_type.into());
         link
     }
 
-    pub fn deprecation(self, deprecation: &str) -> Link {
+    pub fn deprecation<S>(self, deprecation: S) -> Link
+        where S: Into<String> {
         let mut link = self.clone();
-        link.deprecation = Some(deprecation.to_string());
+        link.deprecation = Some(deprecation.into());
         link
     }
 
-    pub fn name(self, name: &str) -> Link {
+    pub fn name<S>(self, name: S) -> Link
+        where S: Into<String> {
         let mut link = self.clone();
-        link.name = Some(name.to_string());
+        link.name = Some(name.into());
         link
     }
 
-    pub fn title(self, title: &str) -> Link {
+    pub fn title<S>(self, title: S) -> Link
+        where S: Into<String> {
         let mut link = self.clone();
-        link.title = Some(title.to_string());
+        link.title = Some(title.into());
         link
     }
 
-    pub fn profile(self, profile: &str) -> Link {
+    pub fn profile<S>(self, profile: S) -> Link
+        where S: Into<String> {
         let mut link = self.clone();
-        link.profile = Some(profile.to_string());
+        link.profile = Some(profile.into());
         link
     }
 
-    pub fn hreflang(self, hreflang: &str) -> Link {
+    pub fn hreflang<S>(self, hreflang: S) -> Link
+        where S: Into<String> {
         let mut link = self.clone();
-        link.hreflang = Some(hreflang.to_string());
+        link.hreflang = Some(hreflang.into());
         link
     }
 }
