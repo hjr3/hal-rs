@@ -6,6 +6,10 @@ description = "A pure rust library for generating Hypertext Application Language
 license = "MIT"
 authors = [ "herman@hermanradtke.com" ]
 
+documentation = "http://hermanradtke.com/hal-rs"
+homepage = "http://hermanradtke.com/hal-rs"
+repository = "https://github.com/hjr3/hal-rs"
+
 [lib]
 
 name = "hal"
