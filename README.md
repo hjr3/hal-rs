@@ -3,6 +3,7 @@
 A pure rust library for generating Hal responses.
 
 [![Build Status](https://travis-ci.org/hjr3/hal-rs.svg)](https://travis-ci.org/hjr3/hal-rs)
+[![](http://meritbadge.herokuapp.com/hal)](https://crates.io/crates/hal)
 
 ## Builds
 
