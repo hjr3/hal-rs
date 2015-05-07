@@ -8,7 +8,7 @@ pub enum HalState {
     I64(i64),
     F64(f64),
     U64(u64),
-    HalString(String),
+    String(String),
     Boolean(bool),
     Null,
     List(HalList),
@@ -27,17 +27,25 @@ pub trait ToHalState {
     fn to_hal_state(&self) -> HalState;
 }
 
-impl ToHalState for isize {
-    fn to_hal_state(&self) -> HalState { HalState::I64(*self as i64) }
+macro_rules! to_hal_state_impl_i64 {
+    ($($t:ty), +) => (
+        $(impl ToHalState for $t {
+            fn to_hal_state(&self) -> HalState { HalState::I64(*self as i64) }
+        })+
+    )
 }
 
-impl ToHalState for i64 {
-    fn to_hal_state(&self) -> HalState { HalState::I64(*self) }
+to_hal_state_impl_i64! { isize, i8, i16, i32, i64 }
+
+macro_rules! to_hal_state_impl_u64 {
+    ($($t:ty), +) => (
+        $(impl ToHalState for $t {
+            fn to_hal_state(&self) -> HalState { HalState::U64(*self as u64) }
+        })+
+    )
 }
 
-impl ToHalState for u64 {
-    fn to_hal_state(&self) -> HalState { HalState::U64(*self) }
-}
+to_hal_state_impl_u64! { usize, u8, u16, u32, u64 }
 
 impl ToHalState for f64 {
     fn to_hal_state(&self) -> HalState { HalState::F64(*self) }
@@ -52,11 +60,15 @@ impl ToHalState for bool {
 }
 
 impl ToHalState for String {
-    fn to_hal_state(&self) -> HalState { HalState::HalString((*self).clone()) }
+    fn to_hal_state(&self) -> HalState { HalState::String((*self).clone()) }
 }
 
 impl ToHalState for &'static str {
-    fn to_hal_state(&self) -> HalState { HalState::HalString((*self).to_string()) }
+    fn to_hal_state(&self) -> HalState { HalState::String((*self).to_string()) }
+}
+
+impl<T:ToHalState> ToHalState for [T] {
+    fn to_hal_state(&self) -> HalState { HalState::List(self.iter().map(|elt| elt.to_hal_state()).collect()) }
 }
 
 impl<T:ToHalState> ToHalState for Vec<T> {
@@ -113,7 +125,7 @@ impl ToJson for HalState {
             HalState::I64(v) => v.to_json(),
             HalState::F64(v) => v.to_json(),
             HalState::U64(v) => v.to_json(),
-            HalState::HalString(ref v) => v.to_json(),
+            HalState::String(ref v) => v.to_json(),
             HalState::Boolean(v) => v.to_json(),
             HalState::Null => ().to_json(),
             HalState::List(ref v) => v.to_json(),

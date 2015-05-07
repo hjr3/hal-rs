@@ -60,7 +60,7 @@
 //!                         currency: "USD".to_string(), 
 //!                         status: "processing".to_string() };
 //!  
-//!     println!("Creating Hal using to_hal(): {}", order.to_hal().to_json().to_string());
+//!     println!("Creating Hal using to_hal(): {}", order.to_hal().to_json().pretty().to_string());
 //! }
 //! ```
 
