@@ -29,7 +29,7 @@ impl Link {
 
     /// Convert a json object into a Link
     pub fn from_json(json: &Json) -> Link {
-        let ref url = json["href".as_ref()];
+        let ref url = json["href"];
 
         let mut link = Link::new(url.as_string().unwrap());
 
