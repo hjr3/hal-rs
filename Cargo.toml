@@ -3,7 +3,7 @@
 name = "hal"
 version = "0.0.5"
 description = "A pure rust library for generating Hypertext Application Language (Hal) responses."
-license = "MIT"
+license = "MIT/Apache-2.0"
 authors = [ "herman@hermanradtke.com" ]
 
 documentation = "http://hermanradtke.com/hal-rs"
