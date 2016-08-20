@@ -48,35 +48,49 @@ macro_rules! to_hal_state_impl_u64 {
 to_hal_state_impl_u64! { usize, u8, u16, u32, u64 }
 
 impl ToHalState for f64 {
-    fn to_hal_state(&self) -> HalState { HalState::F64(*self) }
+    fn to_hal_state(&self) -> HalState {
+        HalState::F64(*self)
+    }
 }
 
 impl ToHalState for () {
-    fn to_hal_state(&self) -> HalState { HalState::Null }
+    fn to_hal_state(&self) -> HalState {
+        HalState::Null
+    }
 }
 
 impl ToHalState for bool {
-    fn to_hal_state(&self) -> HalState { HalState::Boolean(*self) }
+    fn to_hal_state(&self) -> HalState {
+        HalState::Boolean(*self)
+    }
 }
 
 impl ToHalState for String {
-    fn to_hal_state(&self) -> HalState { HalState::String((*self).clone()) }
+    fn to_hal_state(&self) -> HalState {
+        HalState::String((*self).clone())
+    }
 }
 
 impl ToHalState for &'static str {
-    fn to_hal_state(&self) -> HalState { HalState::String((*self).to_string()) }
+    fn to_hal_state(&self) -> HalState {
+        HalState::String((*self).to_string())
+    }
 }
 
-impl<T:ToHalState> ToHalState for [T] {
-    fn to_hal_state(&self) -> HalState { HalState::List(self.iter().map(|elt| elt.to_hal_state()).collect()) }
+impl<T: ToHalState> ToHalState for [T] {
+    fn to_hal_state(&self) -> HalState {
+        HalState::List(self.iter().map(|elt| elt.to_hal_state()).collect())
+    }
 }
 
-impl<T:ToHalState> ToHalState for Vec<T> {
-    fn to_hal_state(&self) -> HalState { HalState::List(self.iter().map(|elt| elt.to_hal_state()).collect()) }
+impl<T: ToHalState> ToHalState for Vec<T> {
+    fn to_hal_state(&self) -> HalState {
+        HalState::List(self.iter().map(|elt| elt.to_hal_state()).collect())
+    }
 }
 
-impl<T:ToHalState> ToHalState for BTreeMap<String, T> {
-    fn to_hal_state(&self) -> HalState { 
+impl<T: ToHalState> ToHalState for BTreeMap<String, T> {
+    fn to_hal_state(&self) -> HalState {
         let mut t = BTreeMap::new();
         for (key, value) in self.iter() {
             t.insert((*key).clone(), value.to_hal_state());
@@ -85,8 +99,8 @@ impl<T:ToHalState> ToHalState for BTreeMap<String, T> {
     }
 }
 
-impl<T:ToHalState> ToHalState for HashMap<String, T> {
-    fn to_hal_state(&self) -> HalState { 
+impl<T: ToHalState> ToHalState for HashMap<String, T> {
+    fn to_hal_state(&self) -> HalState {
         let mut t = BTreeMap::new();
         for (key, value) in self.iter() {
             t.insert((*key).clone(), value.to_hal_state());
@@ -95,11 +109,11 @@ impl<T:ToHalState> ToHalState for HashMap<String, T> {
     }
 }
 
-impl<T:ToHalState> ToHalState for Option<T> {
+impl<T: ToHalState> ToHalState for Option<T> {
     fn to_hal_state(&self) -> HalState {
         match *self {
             None => HalState::Null,
-            Some(ref value) => value.to_hal_state()
+            Some(ref value) => value.to_hal_state(),
         }
     }
 }
@@ -120,7 +134,7 @@ impl ToHalState for Json {
 }
 
 impl ToJson for HalState {
-    fn to_json(&self) -> Json { 
+    fn to_json(&self) -> Json {
         match *self {
             HalState::I64(v) => v.to_json(),
             HalState::F64(v) => v.to_json(),
@@ -133,4 +147,3 @@ impl ToJson for HalState {
         }
     }
 }
-

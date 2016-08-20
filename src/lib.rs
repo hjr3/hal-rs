@@ -5,19 +5,19 @@
 //! ```
 //! extern crate hal;
 //! extern crate rustc_serialize as serialize;
-//!  
+//!
 //! use hal::ToHal;
 //! use hal::link::Link;
 //! use hal::resource::Resource;
 //! use hal::state::ToHalState;
 //! use serialize::json::ToJson;
-//!  
+//!
 //! struct Order {
 //!     total: f64,
 //!     currency: String,
 //!     status: String
 //! }
-//!  
+//!
 //! impl ToHal for Order {
 //!     fn to_hal(self) -> Resource {
 //!         let mut resource = Resource::with_self("https://www.example.com/orders/1");
@@ -27,7 +27,7 @@
 //!         resource
 //!     }
 //! }
-//!  
+//!
 //! fn main() {
 //!     let mut hal = Resource::with_self("/orders");
 //!     hal.add_curie("ea", "http://example.com/docs/rels/{rel}")
@@ -53,13 +53,13 @@
 //!                 .add_state("currency", "USD")
 //!                 .add_state("status", "processing")
 //!         );
-//!  
+//!
 //!     println!("Creating Hal using a DSL: {}", hal.to_json().to_string());
-//!  
-//!     let order = Order { total: 20.00 as f64, 
-//!                         currency: "USD".to_string(), 
+//!
+//!     let order = Order { total: 20.00 as f64,
+//!                         currency: "USD".to_string(),
 //!                         status: "processing".to_string() };
-//!  
+//!
 //!     println!("Creating Hal using to_hal(): {}", order.to_hal().to_json().pretty().to_string());
 //! }
 //! ```

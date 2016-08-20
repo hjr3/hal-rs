@@ -16,14 +16,15 @@ pub struct Link {
 
 impl Link {
     pub fn new<S: Into<String>>(href: S) -> Link {
-        Link { href: href.into(),
-        templated: None,
-        media_type: None,
-        deprecation: None,
-        name: None,
-        profile: None,
-        title: None,
-        hreflang: None
+        Link {
+            href: href.into(),
+            templated: None,
+            media_type: None,
+            deprecation: None,
+            name: None,
+            profile: None,
+            title: None,
+            hreflang: None,
         }
     }
 
@@ -38,37 +39,37 @@ impl Link {
         if json.search("templated").is_some() {
             let value = json.search("templated").unwrap();
             link.templated(value.as_boolean().unwrap());
-        } 
+        }
 
         if json.search("type").is_some() {
             let value = json.search("type").unwrap();
             link.media_type(value.as_string().unwrap());
-        } 
+        }
 
         if json.search("deprecation").is_some() {
             let value = json.search("deprecation").unwrap();
             link.deprecation(value.as_string().unwrap());
-        } 
+        }
 
         if json.search("name").is_some() {
             let value = json.search("name").unwrap();
             link.name(value.as_string().unwrap());
-        } 
+        }
 
         if json.search("title").is_some() {
             let value = json.search("title").unwrap();
             link.title(value.as_string().unwrap());
-        } 
+        }
 
         if json.search("profile").is_some() {
             let value = json.search("profile").unwrap();
             link.profile(value.as_string().unwrap());
-        } 
+        }
 
         if json.search("hreflang").is_some() {
             let value = json.search("hreflang").unwrap();
             link.hreflang(value.as_string().unwrap());
-        } 
+        }
 
         link
     }
@@ -79,37 +80,43 @@ impl Link {
     }
 
     pub fn media_type<S>(&mut self, media_type: S) -> &mut Link
-        where S: Into<String> {
+        where S: Into<String>
+    {
         self.media_type = Some(media_type.into());
         self
     }
 
     pub fn deprecation<S>(&mut self, deprecation: S) -> &mut Link
-        where S: Into<String> {
+        where S: Into<String>
+    {
         self.deprecation = Some(deprecation.into());
         self
     }
 
     pub fn name<S>(&mut self, name: S) -> &mut Link
-        where S: Into<String> {
+        where S: Into<String>
+    {
         self.name = Some(name.into());
         self
     }
 
     pub fn title<S>(&mut self, title: S) -> &mut Link
-        where S: Into<String> {
+        where S: Into<String>
+    {
         self.title = Some(title.into());
         self
     }
 
     pub fn profile<S>(&mut self, profile: S) -> &mut Link
-        where S: Into<String> {
+        where S: Into<String>
+    {
         self.profile = Some(profile.into());
         self
     }
 
     pub fn hreflang<S>(&mut self, hreflang: S) -> &mut Link
-        where S: Into<String> {
+        where S: Into<String>
+    {
         self.hreflang = Some(hreflang.into());
         self
     }
