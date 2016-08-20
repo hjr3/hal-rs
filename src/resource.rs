@@ -44,10 +44,10 @@ impl Resource {
 
                     for (link_key, link_object) in links.iter() {
                         let link = Link::from_json(&link_object.to_json());
-                        resource.add_link(link_key.as_ref(), &link);
+                        resource.add_link(&link_key[..], &link);
                     }
                 } else {
-                    resource.add_state(key.as_ref(), value.clone());
+                    resource.add_state(&key[..], value.clone());
                 }
             }
         }
